@@ -1,5 +1,9 @@
 import cv2 as cv
 import numpy as np
+import os
+
+# só para garantir que a pasta de saída exista
+os.makedirs("saidas", exist_ok=True)
 
 def inspecao_imagem(img):
     if len(img.shape) == 2:
@@ -109,16 +113,6 @@ def quantizacao(imagem):
     cv.imwrite("saidas/quant_4.png", imagens_quantizadas[4])
     cv.imwrite("saidas/quant_2.png", imagens_quantizadas[2])
 
-def negativo(img):
-    altura = img.shape[0]
-    largura = img.shape[1]
-    negativo = np.zeros((altura, largura, img.shape[2]))
-    print("negativo criada")
-    for i in range(altura):
-            for j in range(largura):
-                negativo[i,j] = 255 - img[i,j]
-    cv.imwrite("saidas/negative.png", negativo)
-
 def main():
     img = cv.imread("aura.png")
     saida = "saidas/saida.png"
@@ -127,7 +121,6 @@ def main():
     separar_canais(img)
     niveis_cinza(img)
     quantizacao(img)
-    negativo(img)
     
 if __name__ == "__main__":
     main()
