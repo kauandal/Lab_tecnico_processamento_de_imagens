@@ -1,0 +1,11 @@
+# Artefatos de ferramenta, nao fazem parte da entrega
+.planning/
+
+# Ambiente e cache
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+build/
+dist/
+*.egg-info/
