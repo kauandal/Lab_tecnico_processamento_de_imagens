@@ -1,0 +1,33 @@
+Registro de execucao do laboratorio M1.2
+Gerado por: python lab_2_m1.py e python -m pytest
+Python: 3.13.14  numpy: 2.5.2  opencv: 5.0.0
+
+== python lab_2_m1.py ==
+image,pixels,mean,stddev,min,max,levels_used,at_zero,at_max
+original,306240,103.2137,56.0386,0,249,250,51,0
+brightness_pos50,306240,153.0855,55.7881,50,255,206,0,5471
+brightness_neg50,306240,58.3231,49.1000,0,199,200,63777,0
+contrast_0_5,306240,115.8568,28.0207,64,189,126,0,0
+contrast_1_0,306240,103.2137,56.0386,0,249,250,51,0
+contrast_1_5,306240,96.4812,76.1633,0,255,172,55570,2004
+negative,306240,151.7863,56.0386,6,255,250,0,51
+threshold_128,306240,93.4767,122.8766,0,255,2,193980,112260
+threshold_64,306240,187.9493,112.2592,0,255,2,80524,225716
+ramp,16384,127.5000,73.9003,0,255,256,64,64
+ramp_brightness_pos50,16384,172.5195,67.0582,50,255,206,0,3264
+ramp_contrast_1_5,16384,127.5000,95.1795,0,255,172,2752,2752
+imagens geradas em: images\output
+histogramas e resumo em: results
+exit=0
+
+== python -m pytest -q ==
+............................................................             [100%]
+60 passed in 0.16s
+
+== codigos de saida das guardas ==
+  erro: arquivo de entrada nao encontrado: images\input\nao_existe.png
+  exit=1
+  erro: limiar invalido: 300; use um inteiro entre 0 e 255
+  exit=1
+  erro: valor de alpha invalido: -1.0; use um numero maior ou igual a zero
+  exit=1
