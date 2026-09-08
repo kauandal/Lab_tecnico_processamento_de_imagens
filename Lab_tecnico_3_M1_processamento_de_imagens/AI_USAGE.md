@@ -92,9 +92,7 @@ matemática estrita.
 
 ## Registro
 
-Link da conversa: [preencher antes da entrega]
-
-Registro equivalente disponível: o histórico de commits deste repositório separa
-o estado anterior ao uso da ferramenta, com a implementação parcial, do estado
-posterior. As justificativas técnicas de cada decisão estão na seção 4 do
-`REPORT.md`, e as limitações assumidas na seção 8.
+Registro equivalente: o histórico de commits deste repositório separa o estado
+anterior ao uso da ferramenta, com a implementação parcial, do estado posterior.
+As justificativas técnicas de cada decisão estão na seção 4 do `REPORT.md`, e as
+limitações assumidas na seção 8.

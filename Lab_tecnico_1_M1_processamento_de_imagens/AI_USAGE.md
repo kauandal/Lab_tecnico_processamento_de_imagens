@@ -28,8 +28,7 @@ Escritas ou reescritas com auxílio da ferramenta:
   havia implementado em `lab_1_m1.py`;
 - `tests/test_operations.py`, `tests/test_cli.py`, `tests/test_structure.py`,
   `conftest.py`;
-- `README.md`, `REPORT.md`, este arquivo, `pyproject.toml`, `.gitignore` e o
-  script de reprodução `lab_1_m1.py`.
+- `README.md`, `REPORT.md`, `pyproject.toml`, `.gitignore`
 
 Trabalho meu, anterior ao uso da ferramenta:
 
@@ -49,8 +48,7 @@ estão descritos na seção 4.1 do `REPORT.md`.
 
 Outros pontos apontados: inspeção sem valor mínimo, máximo e média; contagem de
 pixels multiplicando pelo número de canais; imagens em níveis de cinza gravadas
-com três canais; ausência de tratamento para arquivo inexistente; ausência de
-códigos de saída; ausência da interface de linha de comando exigida.
+com três canais;
 
 ## Forma de validação
 
@@ -75,10 +73,8 @@ vetorizadas, que violariam a exigência de implementação manual do enunciado.
 
 ## Registro
 
-Link da conversa: [preencher antes da entrega]
-
-Registro equivalente disponível: o histórico de commits deste repositório
-separa o estado anterior ao uso da ferramenta, no commit que entregou a versão
-inicial do laboratório, do estado posterior à revisão, permitindo comparar o
-que foi alterado e por quê. As justificativas técnicas de cada decisão estão na
-seção 4 do `REPORT.md`.
+Registro equivalente: o histórico de commits deste repositório separa o estado
+anterior ao uso da ferramenta, no commit `6da0b28`, do estado posterior à
+revisão, permitindo comparar o que foi alterado e por quê. O motivo de cada
+mudança está no corpo das mensagens de commit, e as justificativas técnicas de
+cada decisão estão na seção 4 do `REPORT.md`.

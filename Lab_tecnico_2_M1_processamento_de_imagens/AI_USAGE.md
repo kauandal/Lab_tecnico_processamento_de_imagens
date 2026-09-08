@@ -82,9 +82,7 @@ violariam a exigência de implementação manual do enunciado.
 
 ## Registro
 
-Link da conversa: [preencher antes da entrega]
-
-Registro equivalente disponível: o histórico de commits deste repositório
-separa o estado anterior ao uso da ferramenta, no commit `6da0b28`, do estado
-posterior à revisão, permitindo comparar o que foi alterado e por quê. As
-justificativas técnicas de cada decisão estão na seção 4 do `REPORT.md`.
+Registro equivalente: o histórico de commits deste repositório separa o estado
+anterior ao uso da ferramenta, no commit `6da0b28`, do estado posterior à
+revisão, permitindo comparar o que foi alterado e por quê. As justificativas
+técnicas de cada decisão estão na seção 4 do `REPORT.md`.
