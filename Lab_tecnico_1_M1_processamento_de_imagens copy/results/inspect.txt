@@ -1,0 +1,17 @@
+width=638
+height=480
+channels=3
+pixels=306240
+type=uint8
+min=0
+max=255
+mean=102.8340
+min_b=0
+max_b=255
+mean_b=72.4239
+min_g=0
+max_g=255
+mean_g=84.6324
+min_r=0
+max_r=255
+mean_r=151.4457
