@@ -1,0 +1,5 @@
+distance_from_border,pixels,mean_abs_diff,max_abs_diff
+0,60,5.6667,85.0000
+1,52,0.0000,0.0000
+2,44,0.0000,0.0000
+3,36,0.0000,0.0000
