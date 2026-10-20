@@ -1,0 +1,4 @@
+analysis,sequence,initial_count_4,initial_count_8,initial_kept,initial_area,final_count_4,final_count_8,final_kept,final_area
+coins,sequence.json,190,87,25,38336,28,28,25,40069
+moedas_brasileiras,sequence.json,77,23,5,54543,5,5,5,55987
+coins_close15,sequence_close15.json,190,87,25,38336,17,17,16,42065

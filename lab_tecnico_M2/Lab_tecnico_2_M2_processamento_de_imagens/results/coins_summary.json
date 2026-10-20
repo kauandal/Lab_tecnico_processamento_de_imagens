@@ -1,0 +1,57 @@
+{
+  "input": "images/output/coins_mask.png",
+  "connectivity": 8,
+  "min_area": 100,
+  "sequence": [
+    {
+      "operation": "open",
+      "shape": "ellipse",
+      "size": 3,
+      "iterations": 1,
+      "purpose": "remover pontos isolados de fundo e ruido de compressao menores que o elemento estruturante"
+    },
+    {
+      "operation": "close",
+      "shape": "ellipse",
+      "size": 7,
+      "iterations": 1,
+      "purpose": "fechar furos pequenos dentro das moedas e religar pedacos da mesma moeda"
+    }
+  ],
+  "stages": [
+    "results/coins_stage_1_open.png",
+    "results/coins_stage_2_close.png"
+  ],
+  "stage_counts": [
+    {
+      "count_raw": 50,
+      "count_kept": 28,
+      "area_raw": 36843,
+      "area_kept": 36379
+    },
+    {
+      "count_raw": 28,
+      "count_kept": 25,
+      "area_raw": 40069,
+      "area_kept": 40004
+    }
+  ],
+  "initial": {
+    "foreground": 38336,
+    "count_4": 190,
+    "count_8": 87,
+    "count_raw": 87,
+    "count_kept": 25,
+    "area_raw": 38336,
+    "area_kept": 38080
+  },
+  "final": {
+    "foreground": 40069,
+    "count_4": 28,
+    "count_8": 28,
+    "count_raw": 28,
+    "count_kept": 25,
+    "area_raw": 40069,
+    "area_kept": 40004
+  }
+}

@@ -1,0 +1,49 @@
+Registro de execucao dos laboratorios M2.1 e M2.2
+Gerado por: python lab_2_m2.py e python -m pytest
+Python: 3.13.14  numpy: 2.5.2  opencv: 5.0.0
+
+== python lab_2_m2.py ==
+== reproducao das mascaras do M2.1
+== coins.png
+fixed: limiar=120 primeiro_plano=0.3295
+otsu: limiar=107 primeiro_plano=0.3878
+== moedas_brasileiras.jpg
+fixed: limiar=230 primeiro_plano=0.2733
+otsu: limiar=188 primeiro_plano=0.1613
+imagens geradas em: images\output
+tabelas em: results
+== analyze coins_mask.png com config/sequence.json
+estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results\coins_stage_1_open.png (brutos=50 filtrados=28 area=36843)
+estagio 2: close ellipse 7x7, 1 iteracao(oes) -> results\coins_stage_2_close.png (brutos=28 filtrados=25 area=40069)
+conectividade=8
+min_area=100
+inicial: componentes_4=190 componentes_8=87 brutos=87 filtrados=25 area=38336
+final: componentes_4=28 componentes_8=28 brutos=28 filtrados=25 area=40069
+resumo gravado em: results\coins_summary.json
+figura: images\output\coins_estagios.png
+== analyze moedas_brasileiras_mask.png com config/sequence.json
+estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results\moedas_brasileiras_stage_1_open.png (brutos=6 filtrados=5 area=53864)
+estagio 2: close ellipse 7x7, 1 iteracao(oes) -> results\moedas_brasileiras_stage_2_close.png (brutos=5 filtrados=5 area=55987)
+conectividade=8
+min_area=100
+inicial: componentes_4=77 componentes_8=23 brutos=23 filtrados=5 area=54543
+final: componentes_4=5 componentes_8=5 brutos=5 filtrados=5 area=55987
+resumo gravado em: results\moedas_brasileiras_summary.json
+figura: images\output\moedas_brasileiras_estagios.png
+== analyze coins_mask.png com config/sequence_close15.json
+estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results\coins_close15_stage_1_open.png (brutos=50 filtrados=28 area=36843)
+estagio 2: close ellipse 15x15, 1 iteracao(oes) -> results\coins_close15_stage_2_close.png (brutos=17 filtrados=16 area=42065)
+conectividade=8
+min_area=100
+inicial: componentes_4=190 componentes_8=87 brutos=87 filtrados=25 area=38336
+final: componentes_4=17 componentes_8=17 brutos=17 filtrados=16 area=42065
+resumo gravado em: results\coins_close15_summary.json
+figura: images\output\coins_close15_estagios.png
+tabela antes/depois em: results\comparison.csv
+exit=0
+
+== python -m pytest ==
+........................................................................ [ 67%]
+...................................                                      [100%]
+107 passed in 0.47s
+exit=0

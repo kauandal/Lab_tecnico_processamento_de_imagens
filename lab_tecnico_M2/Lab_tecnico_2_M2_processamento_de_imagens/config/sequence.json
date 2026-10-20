@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {
+      "operation": "open",
+      "shape": "ellipse",
+      "size": 3,
+      "iterations": 1,
+      "purpose": "remover pontos isolados de fundo e ruido de compressao menores que o elemento estruturante"
+    },
+    {
+      "operation": "close",
+      "shape": "ellipse",
+      "size": 7,
+      "iterations": 1,
+      "purpose": "fechar furos pequenos dentro das moedas e religar pedacos da mesma moeda"
+    }
+  ]
+}

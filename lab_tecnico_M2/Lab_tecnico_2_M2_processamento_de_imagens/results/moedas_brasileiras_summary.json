@@ -1,0 +1,57 @@
+{
+  "input": "images/output/moedas_brasileiras_mask.png",
+  "connectivity": 8,
+  "min_area": 100,
+  "sequence": [
+    {
+      "operation": "open",
+      "shape": "ellipse",
+      "size": 3,
+      "iterations": 1,
+      "purpose": "remover pontos isolados de fundo e ruido de compressao menores que o elemento estruturante"
+    },
+    {
+      "operation": "close",
+      "shape": "ellipse",
+      "size": 7,
+      "iterations": 1,
+      "purpose": "fechar furos pequenos dentro das moedas e religar pedacos da mesma moeda"
+    }
+  ],
+  "stages": [
+    "results/moedas_brasileiras_stage_1_open.png",
+    "results/moedas_brasileiras_stage_2_close.png"
+  ],
+  "stage_counts": [
+    {
+      "count_raw": 6,
+      "count_kept": 5,
+      "area_raw": 53864,
+      "area_kept": 53859
+    },
+    {
+      "count_raw": 5,
+      "count_kept": 5,
+      "area_raw": 55987,
+      "area_kept": 55987
+    }
+  ],
+  "initial": {
+    "foreground": 54543,
+    "count_4": 77,
+    "count_8": 23,
+    "count_raw": 23,
+    "count_kept": 5,
+    "area_raw": 54543,
+    "area_kept": 54525
+  },
+  "final": {
+    "foreground": 55987,
+    "count_4": 5,
+    "count_8": 5,
+    "count_raw": 5,
+    "count_kept": 5,
+    "area_raw": 55987,
+    "area_kept": 55987
+  }
+}
