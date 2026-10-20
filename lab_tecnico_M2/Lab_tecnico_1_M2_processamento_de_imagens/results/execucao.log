@@ -1,0 +1,19 @@
+Registro de execucao do laboratorio M2.1
+Gerado por: python lab_1_m2.py e python -m pytest
+Python: 3.13.14  numpy: 2.5.2  opencv: 5.0.0
+
+== python lab_1_m2.py ==
+== coins.png
+fixed: limiar=120 primeiro_plano=0.3295
+otsu: limiar=107 primeiro_plano=0.3878
+== moedas_brasileiras.jpg
+fixed: limiar=230 primeiro_plano=0.2733
+otsu: limiar=188 primeiro_plano=0.1613
+imagens geradas em: images\output
+tabelas em: results
+exit=0
+
+== python -m pytest ==
+.....................................................................    [100%]
+69 passed in 0.29s
+exit=0
