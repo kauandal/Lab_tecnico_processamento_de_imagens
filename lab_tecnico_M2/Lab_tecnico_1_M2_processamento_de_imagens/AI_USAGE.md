@@ -83,6 +83,10 @@ Decisões tomadas por mim durante o trabalho:
 Não fiz alterações diretas no código gerado. As mudanças em relação à
 primeira versão foram pedidas por mim e executadas com a ferramenta:
 
+- simplificação do código, para ficar mais direto e parecido com o dos meus
+  laboratórios da M1, com funções simples, dicionários no lugar de classes e
+  menos abstrações. O comportamento não mudou: as máscaras, os estágios, os
+  CSV e os resumos gerados ficaram idênticos aos da versão anterior;
 - reescrita do `README.md`, do `REPORT.md` e deste arquivo para seguir o
   padrão dos meus laboratórios da M1, com texto mais simples;
 - retirada da opção `--summary` da linha de comando, que gravava um JSON por

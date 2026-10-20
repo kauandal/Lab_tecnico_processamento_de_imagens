@@ -10,11 +10,11 @@ otsu: otsu T=107 primeiro_plano=0.3878
 fixed: fixed T=85 + invert primeiro_plano=0.1792
 otsu: otsu T=109 + invert primeiro_plano=0.3129
 hsv: hsv S>=30 blur 5 primeiro_plano=0.1546
-imagens geradas em: images\output
+imagens geradas em: images/output
 tabelas em: results
 exit=0
 
 == python -m pytest ==
 ........................................................................ [100%]
-72 passed in 1.30s
+72 passed in 1.28s
 exit=0

@@ -1,28 +1,18 @@
-"""Reproduz todas as saídas do laboratório M2.1 em uma única execução.
+"""Gera todas as saidas do M2.1 de uma vez.
 
-Este script é um atalho de reprodução. A implementação avaliada está em
-``src/pdi_lab``, e cada máscara também pode ser gerada isoladamente pela
-linha de comando::
+Uso: python lab_1_m2.py
 
-    python -m pdi_lab --input <imagem> --output <mascara.png> --operation segment --method <metodo>
-
-Uso::
-
-    python lab_1_m2.py
+Cada mascara tambem pode ser gerada pela linha de comando:
+python -m pdi_lab --input <imagem> --output <mascara.png> --operation segment --method <metodo>
 """
-
-from __future__ import annotations
 
 import csv
 import os
 import sys
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
-
-# Os caminhos deste script sao relativos a raiz do projeto, de forma que ele
-# funcione a partir de qualquer diretorio de trabalho.
+# deixa o script rodar de qualquer pasta, sem instalar o pacote
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "src"))
 os.chdir(PROJECT_ROOT)
 
 import cv2 as cv  # noqa: E402
@@ -32,73 +22,63 @@ from pdi_lab import segmentation  # noqa: E402
 from pdi_lab.errors import PdiLabError  # noqa: E402
 from pdi_lab.image_io import load_image, save_image  # noqa: E402
 
-INPUT_DIR = Path("images/input")
-# Lado maior das sobreposições gravadas pelo script. Elas são só
-# visualização; nas fotos de 10 megapixels, em tamanho original, cada PNG
-# teria cerca de 13 MB.
+# a sobreposicao e so visualizacao; nas fotos de 10 megapixels cada PNG
+# teria uns 13 MB, entao reduzo para 1280 no lado maior
 OVERLAY_MAX_SIDE = 1280
-OUTPUT_DIR = Path("images/output")
-RESULTS_DIR = Path("results")
 
-# Configurações de cada imagem. Todas passam pelo limiar fixo e pelo Otsu; a
-# foto colorida também passa pelo HSV. ``selected`` é a que segue para o M2.2.
-# Em moedas_real_separadas.jpg a moeda é mais escura que o fundo, por isso a
-# inversão nos métodos em cinza.
+# configuracoes de cada imagem. A moeda da foto e mais escura que o fundo,
+# por isso o invert nos metodos em cinza. "selected" vai para o M2.2.
 CASES = [
     {
         "image": "coins.png",
-        "configs": {
-            "fixed": {"method": "fixed", "threshold": 120},
-            "otsu": {"method": "otsu"},
-        },
+        "configs": [
+            ("fixed", {"method": "fixed", "threshold": 120}),
+            ("otsu", {"method": "otsu"}),
+        ],
         "selected": "fixed",
-        "sweep": {"invert": False, "thresholds": range(90, 155, 5)},
+        "sweep_invert": False,
+        "sweep": range(90, 155, 5),
     },
     {
         "image": "moedas_real_separadas.jpg",
-        "configs": {
-            "fixed": {"method": "fixed", "threshold": 85, "invert": True},
-            "otsu": {"method": "otsu", "invert": True},
-            "hsv": {
-                "method": "hsv",
-                "hsv_lower": (0, 30, 0),
-                "hsv_upper": (179, 255, 255),
-                "blur": 5,
-            },
-        },
+        "configs": [
+            ("fixed", {"method": "fixed", "threshold": 85, "invert": True}),
+            ("otsu", {"method": "otsu", "invert": True}),
+            ("hsv", {"method": "hsv", "hsv_lower": (0, 30, 0), "hsv_upper": (179, 255, 255), "blur": 5}),
+        ],
         "selected": "hsv",
-        "sweep": {"invert": True, "thresholds": range(60, 125, 5)},
+        "sweep_invert": True,
+        "sweep": range(60, 125, 5),
     },
 ]
 
 
-def describe(details: dict) -> str:
-    """Texto curto com o método e os parâmetros, para rótulos e tabela."""
-    method = details["method"]
-    if method == "fixed":
-        text = "fixed T=" + str(details["threshold"])
-    elif method == "otsu":
-        text = "otsu T=" + str(details["otsu_threshold"])
+def label_text(info):
+    if info["method"] == "fixed":
+        text = "fixed T=" + str(info["threshold"])
+    elif info["method"] == "otsu":
+        text = "otsu T=" + str(info["otsu_threshold"])
     else:
-        text = "hsv S>=" + str(details["hsv_lower"][1])
-    if details["blur"]:
-        text += " blur " + str(details["blur"])
-    if details["invert"]:
+        text = "hsv S>=" + str(info["hsv_lower"][1])
+    if info["blur"]:
+        text += " blur " + str(info["blur"])
+    if info["invert"]:
         text += " + invert"
     return text
 
 
-def reduced(image: np.ndarray, max_side: int = OVERLAY_MAX_SIDE) -> np.ndarray:
-    """Reduz a imagem para caber em ``max_side``; imagens menores não mudam."""
-    scale = max_side / max(image.shape[:2])
+def small(image):
+    # reduz para caber em OVERLAY_MAX_SIDE; imagem pequena fica igual
+    scale = OVERLAY_MAX_SIDE / max(image.shape[:2])
     if scale >= 1:
         return image
-    size = (round(image.shape[1] * scale), round(image.shape[0] * scale))
-    return cv.resize(image, size, interpolation=cv.INTER_AREA)
+    w = round(image.shape[1] * scale)
+    h = round(image.shape[0] * scale)
+    return cv.resize(image, (w, h), interpolation=cv.INTER_AREA)
 
 
-def with_label(image: np.ndarray, text: str, width: int = 320) -> np.ndarray:
-    """Redimensiona a imagem e escreve um rótulo numa faixa branca em cima."""
+def panel(image, text, width=320):
+    # imagem pequena com um titulo em cima, para montar a figura
     image = segmentation.to_bgr(image)
     height = round(image.shape[0] * width / image.shape[1])
     image = cv.resize(image, (width, height), interpolation=cv.INTER_AREA)
@@ -107,98 +87,69 @@ def with_label(image: np.ndarray, text: str, width: int = 320) -> np.ndarray:
     return np.vstack([band, image])
 
 
-def main() -> int:
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+def main():
+    os.makedirs("images/output", exist_ok=True)
+    os.makedirs("results", exist_ok=True)
 
     foreground_rows = []
     sweep_rows = []
 
     try:
         for case in CASES:
-            stem = Path(case["image"]).stem
-            image = load_image(INPUT_DIR / case["image"])
-            print("== " + case["image"])
+            name = case["image"]
+            stem = os.path.splitext(name)[0]
+            image = load_image("images/input/" + name)
+            print("== " + name)
 
-            panels = [with_label(image, "original")]
+            panels = [panel(image, "original")]
             masks = {}
-            for name, config in case["configs"].items():
-                result = segmentation.segment(image, **config)
-                segmentation.validate_mask(result.mask, image.shape[:2])
-                masks[name] = result.mask
+            for config_name, config in case["configs"]:
+                mask, info = segmentation.segment(image, **config)
+                segmentation.validate_mask(mask, image.shape[:2])
+                masks[config_name] = mask
 
-                save_image(OUTPUT_DIR / (stem + "_mask_" + name + ".png"), result.mask)
-                # A máscara fica no tamanho original; a sobreposição, que é só
-                # visualização, vai em PNG reduzido.
-                save_image(
-                    OUTPUT_DIR / (stem + "_overlay_" + name + ".png"),
-                    reduced(segmentation.overlay(image, result.mask)),
-                )
-                panels.append(with_label(result.mask, describe(result.details)))
+                save_image("images/output/" + stem + "_mask_" + config_name + ".png", mask)
+                save_image("images/output/" + stem + "_overlay_" + config_name + ".png",
+                           small(segmentation.overlay(image, mask)))
+                panels.append(panel(mask, label_text(info)))
 
-                stats = segmentation.mask_stats(result.mask)
-                threshold = result.details.get("threshold", result.details.get("otsu_threshold", ""))
-                foreground_rows.append(
-                    [
-                        case["image"],
-                        name,
-                        threshold,
-                        result.details["invert"],
-                        result.details["blur"],
-                        stats["foreground"],
-                        stats["pixels"],
-                        "{0:.6f}".format(stats["foreground_ratio"]),
-                        name == case["selected"],
-                    ]
-                )
-                print(
-                    "{0}: {1} primeiro_plano={2:.4f}".format(
-                        name, describe(result.details), stats["foreground_ratio"]
-                    )
-                )
-
-            # Máscara de trabalho que segue para o M2.2.
-            selected = masks[case["selected"]]
-            save_image(OUTPUT_DIR / (stem + "_mask.png"), selected)
-
-            panels.append(
-                with_label(segmentation.overlay(image, selected), "sobreposicao " + case["selected"])
-            )
-            save_image(OUTPUT_DIR / (stem + "_comparacao.png"), np.hstack(panels))
-
-            # Varredura do limiar fixo, para medir a sensibilidade do parâmetro.
-            for threshold in case["sweep"]["thresholds"]:
-                mask = segmentation.segment(
-                    image, "fixed", threshold=threshold, invert=case["sweep"]["invert"]
-                ).mask
                 stats = segmentation.mask_stats(mask)
-                sweep_rows.append(
-                    [
-                        case["image"],
-                        threshold,
-                        case["sweep"]["invert"],
-                        stats["foreground"],
-                        "{0:.6f}".format(stats["foreground_ratio"]),
-                    ]
-                )
+                threshold = info.get("threshold", info.get("otsu_threshold", ""))
+                foreground_rows.append([name, config_name, threshold, info["invert"], info["blur"],
+                                        stats["foreground"], stats["pixels"],
+                                        "%.6f" % stats["foreground_ratio"], config_name == case["selected"]])
+                print("%s: %s primeiro_plano=%.4f" % (config_name, label_text(info), stats["foreground_ratio"]))
+
+            # mascara que vai para o M2.2
+            chosen = masks[case["selected"]]
+            save_image("images/output/" + stem + "_mask.png", chosen)
+
+            panels.append(panel(segmentation.overlay(image, chosen), "sobreposicao " + case["selected"]))
+            save_image("images/output/" + stem + "_comparacao.png", np.hstack(panels))
+
+            # varredura do limiar fixo para ver a sensibilidade
+            for t in case["sweep"]:
+                mask, _ = segmentation.segment(image, "fixed", threshold=t, invert=case["sweep_invert"])
+                stats = segmentation.mask_stats(mask)
+                sweep_rows.append([name, t, case["sweep_invert"], stats["foreground"],
+                                   "%.6f" % stats["foreground_ratio"]])
     except PdiLabError as error:
         print("erro: " + str(error), file=sys.stderr)
         return 1
 
-    with open(RESULTS_DIR / "foreground.csv", "w", newline="", encoding="utf-8") as file:
+    with open("results/foreground.csv", "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(
-            ["image", "config", "threshold", "invert", "blur", "foreground", "pixels", "foreground_ratio", "selected"]
-        )
+        writer.writerow(["image", "config", "threshold", "invert", "blur", "foreground", "pixels",
+                         "foreground_ratio", "selected"])
         writer.writerows(foreground_rows)
 
-    with open(RESULTS_DIR / "threshold_sensitivity.csv", "w", newline="", encoding="utf-8") as file:
+    with open("results/threshold_sensitivity.csv", "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["image", "threshold", "invert", "foreground", "foreground_ratio"])
         writer.writerows(sweep_rows)
 
-    print("imagens geradas em: " + str(OUTPUT_DIR))
-    print("tabelas em: " + str(RESULTS_DIR))
+    print("imagens geradas em: images/output")
+    print("tabelas em: results")
     return 0
 
 

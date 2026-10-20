@@ -1,7 +1,5 @@
 """Leitura e escrita de imagens."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import cv2 as cv
@@ -9,73 +7,47 @@ import numpy as np
 
 from .errors import PdiLabError
 
-# Formatos sem perdas aceitos para gravar máscaras. JPEG fica de fora porque a
-# compressão cria valores intermediários e a máscara deixa de ser binária.
-LOSSLESS_SUFFIXES = (".png", ".bmp", ".tif", ".tiff")
+# formatos sem perdas para a mascara; JPEG cria valores no meio e a mascara
+# deixa de ser binaria
+LOSSLESS_SUFFIXES = [".png", ".bmp", ".tif", ".tiff"]
 
 
-def load_image(path: str | Path) -> np.ndarray:
-    """Carrega uma imagem preservando o número original de canais.
-
-    Levanta ``PdiLabError`` quando o arquivo não existe ou não pode ser
-    decodificado, em vez de devolver ``None`` como o OpenCV faz.
-    """
+def load_image(path):
     path = Path(path)
-
     if not path.exists():
-        raise PdiLabError(f"arquivo de entrada nao encontrado: {path}")
+        raise PdiLabError("arquivo de entrada nao encontrado: " + str(path))
     if not path.is_file():
-        raise PdiLabError(f"caminho de entrada nao e um arquivo: {path}")
+        raise PdiLabError("caminho de entrada nao e um arquivo: " + str(path))
 
+    # o imread devolve None quando nao consegue ler, entao conferimos aqui
     image = cv.imread(str(path), cv.IMREAD_UNCHANGED)
     if image is None:
-        raise PdiLabError(f"falha ao decodificar a imagem: {path}")
+        raise PdiLabError("falha ao decodificar a imagem: " + str(path))
 
     if image.dtype != np.uint8:
-        raise PdiLabError(
-            f"tipo de imagem nao suportado: {image.dtype}; esperado uint8 de 8 bits"
-        )
-    if image.ndim == 3 and image.shape[2] == 4:
-        raise PdiLabError(
-            "imagem com 4 canais (BGRA) nao suportada; converta para 3 canais antes"
-        )
-    if image.ndim not in (2, 3):
-        raise PdiLabError(f"formato de imagem inesperado com {image.ndim} dimensoes")
-
+        raise PdiLabError("tipo de imagem nao suportado: " + str(image.dtype) + "; esperado uint8 de 8 bits")
+    if len(image.shape) == 3 and image.shape[2] == 4:
+        raise PdiLabError("imagem com 4 canais (BGRA) nao suportada; converta para 3 canais antes")
+    if len(image.shape) not in (2, 3):
+        raise PdiLabError("formato de imagem inesperado com " + str(len(image.shape)) + " dimensoes")
     return image
 
 
-def save_image(path: str | Path, image: np.ndarray) -> Path:
-    """Grava a imagem no caminho indicado, criando o diretório pai se preciso.
-
-    Qualquer falha de gravação, inclusive de pasta ou de formato, vira
-    ``PdiLabError`` com mensagem clara, em vez de um traceback.
-    """
+def save_image(path, image):
     path = Path(path)
+    # qualquer erro de pasta ou de gravacao vira mensagem clara, sem traceback
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        written = cv.imwrite(str(path), image)
+        ok = cv.imwrite(str(path), image)
     except (OSError, cv.error) as error:
-        raise PdiLabError(f"falha ao gravar a imagem {path}: {error}") from None
-
-    if not written:
-        raise PdiLabError(f"falha ao gravar a imagem: {path}")
-
+        raise PdiLabError("falha ao gravar a imagem " + str(path) + ": " + str(error))
+    if not ok:
+        raise PdiLabError("falha ao gravar a imagem: " + str(path))
     return path
 
 
-def require_lossless(path: str | Path) -> None:
-    """Recusa extensões com perdas para arquivos que precisam ficar binários."""
+def require_lossless(path):
     suffix = Path(path).suffix.lower()
     if suffix not in LOSSLESS_SUFFIXES:
-        raise PdiLabError(
-            "formato de saida nao aceito para mascara: '"
-            + suffix
-            + "'; use "
-            + ", ".join(LOSSLESS_SUFFIXES)
-        )
-
-
-def channel_count(image: np.ndarray) -> int:
-    """Número de canais da imagem: 1 para escala de cinza, 3 para BGR."""
-    return 1 if image.ndim == 2 else image.shape[2]
+        raise PdiLabError("formato de saida nao aceito para mascara: '" + suffix
+                          + "'; use " + ", ".join(LOSSLESS_SUFFIXES))

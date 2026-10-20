@@ -1,18 +1,9 @@
-"""Interface de linha de comando do laboratório M2.1.
+"""Linha de comando do laboratorio M2.1.
 
-Forma geral de uso::
+    python -m pdi_lab --input <imagem> --output <mascara.png> --operation segment --method <metodo>
 
-    python -m pdi_lab --input <imagem> --output <mascara.png> \
-        --operation segment --method fixed|otsu|adaptive|hsv [parametros]
-
-Códigos de saída:
-
-* ``0`` operação concluída e máscara validada;
-* ``1`` erro previsto de execução, com mensagem explicativa;
-* ``2`` erro de uso dos argumentos, tratado pelo ``argparse``.
+Codigo de saida 0 quando deu certo, 1 em erro previsto e 2 em erro de argumento (argparse).
 """
-
-from __future__ import annotations
 
 import argparse
 import sys
@@ -24,162 +15,91 @@ from . import __version__, segmentation
 from .errors import PdiLabError
 from .image_io import load_image, require_lossless, save_image
 
-EXIT_SUCCESS = 0
-EXIT_ERROR = 1
 
-OPERATIONS = ("segment",)
-
-
-def build_parser() -> argparse.ArgumentParser:
-    """Monta o analisador de argumentos da aplicação."""
+def build_parser():
     parser = argparse.ArgumentParser(
         prog="pdi_lab",
-        description=(
-            "Laboratorio M2.1: mascara binaria e segmentacao. A mascara usa "
-            "255 para objeto e 0 para fundo."
-        ),
+        description="Laboratorio M2.1: mascara binaria e segmentacao. A mascara usa 255 para objeto e 0 para fundo.",
     )
     parser.add_argument("--input", required=True, help="caminho da imagem de entrada")
-    parser.add_argument(
-        "--output",
-        required=True,
-        help="arquivo da mascara (PNG, BMP ou TIFF)",
-    )
-    parser.add_argument(
-        "--operation", required=True, choices=OPERATIONS, help="operacao a executar"
-    )
-    parser.add_argument(
-        "--method",
-        required=True,
-        choices=segmentation.METHODS,
-        help="metodo de segmentacao",
-    )
-    parser.add_argument(
-        "--threshold",
-        type=int,
-        help="limiar do metodo fixed, de 0 a 255; objeto onde cinza > limiar",
-    )
-    parser.add_argument(
-        "--block-size",
-        type=int,
-        default=31,
-        help="lado da vizinhanca do metodo adaptive, impar >= 3 (padrao 31)",
-    )
-    parser.add_argument(
-        "--c",
-        type=float,
-        help="constante do metodo adaptive, obrigatoria: objeto onde pixel > "
-        "media local - C; C negativo exige contraste acima da media",
-    )
-    parser.add_argument(
-        "--adaptive-kind",
-        choices=segmentation.ADAPTIVE_KINDS,
-        default=segmentation.ADAPTIVE_GAUSSIAN,
-        help="media local do metodo adaptive (padrao gaussian)",
-    )
-    parser.add_argument(
-        "--hsv-lower",
-        help="limite inferior H,S,V do metodo hsv (H 0-179, S e V 0-255)",
-    )
-    parser.add_argument(
-        "--hsv-upper",
-        help="limite superior H,S,V do metodo hsv; H menor que o inferior "
-        "indica faixa que cruza 179/0",
-    )
-    parser.add_argument(
-        "--blur",
-        type=int,
-        default=0,
-        help="pre-processamento gaussiano NxN antes do metodo; 0 desliga (padrao)",
-    )
-    parser.add_argument(
-        "--invert",
-        action="store_true",
-        help="inverte a mascara, para objetos mais escuros que o fundo",
-    )
-    parser.add_argument(
-        "--overlay",
-        help="grava a imagem original com a mascara sobreposta neste caminho",
-    )
-    parser.add_argument(
-        "--version", action="version", version="pdi_lab " + __version__
-    )
+    parser.add_argument("--output", required=True, help="arquivo da mascara (PNG, BMP ou TIFF)")
+    parser.add_argument("--operation", required=True, choices=["segment"], help="operacao a executar")
+    parser.add_argument("--method", required=True, choices=segmentation.METHODS, help="metodo de segmentacao")
+    parser.add_argument("--threshold", type=int,
+                        help="limiar do metodo fixed, de 0 a 255; objeto onde cinza > limiar")
+    parser.add_argument("--block-size", type=int, default=31,
+                        help="lado da vizinhanca do metodo adaptive, impar >= 3 (padrao 31)")
+    parser.add_argument("--c", type=float,
+                        help="constante do metodo adaptive, obrigatoria: objeto onde pixel > media local - C")
+    parser.add_argument("--adaptive-kind", choices=segmentation.ADAPTIVE_KINDS, default="gaussian",
+                        help="media local do metodo adaptive (padrao gaussian)")
+    parser.add_argument("--hsv-lower", help="limite inferior H,S,V do metodo hsv (H 0-179, S e V 0-255)")
+    parser.add_argument("--hsv-upper",
+                        help="limite superior H,S,V do metodo hsv; H menor que o inferior indica faixa que cruza 179/0")
+    parser.add_argument("--blur", type=int, default=0,
+                        help="suavizacao gaussiana NxN antes do metodo; 0 desliga (padrao)")
+    parser.add_argument("--invert", action="store_true", help="inverte a mascara, para objeto mais escuro que o fundo")
+    parser.add_argument("--overlay", help="grava a imagem original com a mascara sobreposta neste caminho")
+    parser.add_argument("--version", action="version", version="pdi_lab " + __version__)
     return parser
 
 
-def run_segment(args: argparse.Namespace) -> int:
-    """Gera, grava e valida a máscara; opcionalmente grava a sobreposição."""
-    # A máscara é gravada exatamente no caminho de --output, como pede o
-    # contrato da M2; um diretório ou caminho sem extensão é recusado.
+def run_segment(args):
+    # o contrato pede a mascara exatamente no caminho de --output
     output = Path(args.output)
     require_lossless(output)
     if output.is_dir():
         raise PdiLabError("--output deve ser um arquivo, e nao um diretorio: " + str(output))
 
-    hsv_lower = hsv_upper = None
-    if args.method == segmentation.METHOD_HSV:
+    hsv_lower = None
+    hsv_upper = None
+    if args.method == "hsv":
         if not args.hsv_lower or not args.hsv_upper:
             raise PdiLabError("o metodo hsv exige --hsv-lower e --hsv-upper")
         hsv_lower = segmentation.parse_hsv(args.hsv_lower, "--hsv-lower")
         hsv_upper = segmentation.parse_hsv(args.hsv_upper, "--hsv-upper")
 
     image = load_image(args.input)
-    result = segmentation.segment(
-        image,
-        args.method,
-        threshold=args.threshold,
-        block_size=args.block_size,
-        c=args.c,
-        adaptive_kind=args.adaptive_kind,
-        hsv_lower=hsv_lower,
-        hsv_upper=hsv_upper,
-        blur=args.blur,
-        invert=args.invert,
+    mask, info = segmentation.segment(
+        image, args.method, threshold=args.threshold, block_size=args.block_size, c=args.c,
+        adaptive_kind=args.adaptive_kind, hsv_lower=hsv_lower, hsv_upper=hsv_upper,
+        blur=args.blur, invert=args.invert,
     )
 
-    expected_shape = image.shape[:2]
-    segmentation.validate_mask(result.mask, expected_shape)
-    save_image(output, result.mask)
+    shape = image.shape[:2]
+    segmentation.validate_mask(mask, shape)
+    save_image(output, mask)
 
-    # Relê o arquivo gravado para garantir que a máscara persistida, e não só a
-    # matriz em memória, continua binária e com as dimensões da entrada.
-    persisted = cv.imread(str(output), cv.IMREAD_UNCHANGED)
-    if persisted is None:
+    # le de novo o arquivo gravado para conferir que ele continua binario
+    saved = cv.imread(str(output), cv.IMREAD_UNCHANGED)
+    if saved is None:
         raise PdiLabError("falha ao reler a mascara gravada: " + str(output))
-    segmentation.validate_mask(persisted, expected_shape)
+    segmentation.validate_mask(saved, shape)
 
-    stats = segmentation.mask_stats(persisted)
-    for key, value in result.details.items():
-        print(key + "=" + str(value))
-    print("width=" + str(expected_shape[1]))
-    print("height=" + str(expected_shape[0]))
+    stats = segmentation.mask_stats(saved)
+    for key in info:
+        print(key + "=" + str(info[key]))
+    print("width=" + str(shape[1]))
+    print("height=" + str(shape[0]))
     print("foreground=" + str(stats["foreground"]))
-    print("foreground_ratio={0:.6f}".format(stats["foreground_ratio"]))
+    print("foreground_ratio=%.6f" % stats["foreground_ratio"])
     print("binary_check=ok")
     print("saida gravada em: " + str(output))
 
     if args.overlay:
-        overlay_path = save_image(args.overlay, segmentation.overlay(image, persisted))
-        print("sobreposicao gravada em: " + str(overlay_path))
+        save_image(args.overlay, segmentation.overlay(image, saved))
+        print("sobreposicao gravada em: " + str(args.overlay))
+    return 0
 
-    return EXIT_SUCCESS
 
-
-def main(argv: list[str] | None = None) -> int:
-    """Ponto de entrada da linha de comando."""
-    parser = build_parser()
-    args = parser.parse_args(argv)
-
+def main(argv=None):
+    args = build_parser().parse_args(argv)
     try:
         return run_segment(args)
     except PdiLabError as error:
         print("erro: " + str(error), file=sys.stderr)
-        return EXIT_ERROR
-    except OSError as error:
-        # Falha de leitura ou gravação de CSV e JSON fora de save_image.
-        print("erro: falha de leitura ou gravacao: " + str(error), file=sys.stderr)
-        return EXIT_ERROR
+        return 1
 
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":
     raise SystemExit(main())

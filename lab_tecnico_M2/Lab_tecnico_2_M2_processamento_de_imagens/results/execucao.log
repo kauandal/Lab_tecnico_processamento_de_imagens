@@ -11,7 +11,7 @@ otsu: otsu T=107 primeiro_plano=0.3878
 fixed: fixed T=85 + invert primeiro_plano=0.1792
 otsu: otsu T=109 + invert primeiro_plano=0.3129
 hsv: hsv S>=30 blur 5 primeiro_plano=0.1546
-imagens geradas em: images\output
+imagens geradas em: images/output
 tabelas em: results
 == mascara das moedas empilhadas
 method=otsu
@@ -25,37 +25,37 @@ foreground_ratio=0.445573
 binary_check=ok
 saida gravada em: images\output\moedas_real_empilhadas_mask.png
 == analyze coins_mask.png com config/coins.json
-estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results\coins_stage_1_open.png (brutos=50 filtrados=25 area=36843)
-estagio 2: close ellipse 7x7, 1 iteracao(oes) -> results\coins_stage_2_close.png (brutos=28 filtrados=25 area=40069)
+estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results/coins_stage_1_open.png (brutos=50 filtrados=25 area=36843)
+estagio 2: close ellipse 7x7, 1 iteracao(oes) -> results/coins_stage_2_close.png (brutos=28 filtrados=25 area=40069)
 conectividade=8
 min_area=500
 inicial: componentes_4=190 componentes_8=87 brutos=87 filtrados=25 area=38336
 final: componentes_4=28 componentes_8=28 brutos=28 filtrados=25 area=40069
 resumo gravado em: results\coins_summary.json
-figura: images\output\coins_estagios.png
+figura: images/output/coins_estagios.png
 == analyze moedas_real_separadas_mask.png com config/moedas_real.json
-estagio 1: open ellipse 7x7, 1 iteracao(oes) -> results\moedas_real_separadas_stage_1_open.png (brutos=265 filtrados=11 area=1497625)
-estagio 2: close ellipse 41x41, 1 iteracao(oes) -> results\moedas_real_separadas_stage_2_close.png (brutos=32 filtrados=12 area=1683610)
+estagio 1: open ellipse 7x7, 1 iteracao(oes) -> results/moedas_real_separadas_stage_1_open.png (brutos=265 filtrados=11 area=1497625)
+estagio 2: close ellipse 41x41, 1 iteracao(oes) -> results/moedas_real_separadas_stage_2_close.png (brutos=32 filtrados=12 area=1683610)
 conectividade=8
 min_area=50000
 inicial: componentes_4=2324 componentes_8=1812 brutos=1812 filtrados=12 area=1556885
 final: componentes_4=34 componentes_8=32 brutos=32 filtrados=12 area=1683610
 resumo gravado em: results\moedas_real_separadas_summary.json
-figura: images\output\moedas_real_separadas_estagios.png
+figura: images/output/moedas_real_separadas_estagios.png
 == analyze moedas_real_empilhadas_mask.png com config/moedas_real.json
-estagio 1: open ellipse 7x7, 1 iteracao(oes) -> results\moedas_real_empilhadas_stage_1_open.png (brutos=325 filtrados=6 area=4361924)
-estagio 2: close ellipse 41x41, 1 iteracao(oes) -> results\moedas_real_empilhadas_stage_2_close.png (brutos=27 filtrados=4 area=4746073)
+estagio 1: open ellipse 7x7, 1 iteracao(oes) -> results/moedas_real_empilhadas_stage_1_open.png (brutos=325 filtrados=6 area=4361924)
+estagio 2: close ellipse 41x41, 1 iteracao(oes) -> results/moedas_real_empilhadas_stage_2_close.png (brutos=27 filtrados=4 area=4746073)
 conectividade=8
 min_area=50000
 inicial: componentes_4=1005 componentes_8=856 brutos=856 filtrados=6 area=4486326
 final: componentes_4=31 componentes_8=27 brutos=27 filtrados=4 area=4746073
 resumo gravado em: results\moedas_real_empilhadas_summary.json
-figura: images\output\moedas_real_empilhadas_estagios.png
-tabela antes/depois em: results\comparison.csv
+figura: images/output/moedas_real_empilhadas_estagios.png
+tabela antes/depois em: results/comparison.csv
 exit=0
 
 == python -m pytest ==
 ........................................................................ [ 62%]
 ...........................................                              [100%]
-115 passed in 6.54s
+115 passed in 5.97s
 exit=0

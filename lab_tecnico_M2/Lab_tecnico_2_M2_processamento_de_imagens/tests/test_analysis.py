@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 
 from pdi_lab import analysis
-from pdi_lab.analysis import Step
 from pdi_lab.cli import main
 from pdi_lab.errors import PdiLabError
 
@@ -18,11 +17,11 @@ SEQUENCE = PROJECT / "config" / "coins.json"
 
 
 def open_step(size=3):
-    return Step("open", "ellipse", size, 1, "remover ruido")
+    return {"operation": "open", "shape": "ellipse", "size": size, "iterations": 1, "purpose": "remover ruido"}
 
 
 def close_step(size=3):
-    return Step("close", "ellipse", size, 1, "fechar furo")
+    return {"operation": "close", "shape": "ellipse", "size": size, "iterations": 1, "purpose": "fechar furo"}
 
 
 def write_mask(tmp_path, mask, name="mask.png"):
@@ -94,7 +93,8 @@ def test_objeto_que_toca_a_borda():
     mask[0:3, 0:2] = 255
 
     _, rows = analysis.label_components(mask, 8)
-    opened = analysis.apply_step(mask, Step("open", "rect", 3, 1, "teste"))
+    step = {"operation": "open", "shape": "rect", "size": 3, "iterations": 1, "purpose": "teste"}
+    opened = analysis.apply_step(mask, step)
 
     assert len(rows) == 1
     assert (rows[0]["x"], rows[0]["y"]) == (0, 0)
@@ -168,8 +168,8 @@ def test_sequencia_valida():
         {"steps": [step_dict(), step_dict(operation="close", size=7)]}
     )
 
-    assert [step.operation for step in steps] == ["open", "close"]
-    assert steps[1].size == 7
+    assert [step["operation"] for step in steps] == ["open", "close"]
+    assert steps[1]["size"] == 7
 
 
 @pytest.mark.parametrize(

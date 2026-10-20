@@ -36,10 +36,10 @@ def test_limiar_fixo_extremos():
 def test_inversao_para_objeto_escuro():
     gray = np.array([[0, 119, 120, 121, 255]], dtype=np.uint8)
 
-    result = seg.segment(gray, seg.METHOD_FIXED, threshold=120, invert=True)
+    mask, info = seg.segment(gray, "fixed", threshold=120, invert=True)
 
-    assert result.mask.tolist() == [[255, 255, 255, 0, 0]]
-    assert result.details["invert"] is True
+    assert mask.tolist() == [[255, 255, 255, 0, 0]]
+    assert info["invert"] is True
 
 
 @pytest.mark.parametrize("threshold", [-1, 256])
@@ -52,17 +52,17 @@ def test_limiar_fora_do_intervalo(threshold):
 
 def test_fixed_sem_limiar():
     with pytest.raises(PdiLabError):
-        seg.segment(np.zeros((2, 2), dtype=np.uint8), seg.METHOD_FIXED)
+        seg.segment(np.zeros((2, 2), dtype=np.uint8), "fixed")
 
 
 def test_limiar_fixo_em_imagem_colorida_usa_cinza():
     bgr = np.zeros((2, 2, 3), dtype=np.uint8)
     bgr[0, 0] = (255, 255, 255)
 
-    result = seg.segment(bgr, seg.METHOD_FIXED, threshold=128)
+    mask, _ = seg.segment(bgr, "fixed", threshold=128)
 
-    assert result.mask.shape == (2, 2)
-    assert result.mask.tolist() == [[255, 0], [0, 0]]
+    assert mask.shape == (2, 2)
+    assert mask.tolist() == [[255, 0], [0, 0]]
 
 
 # --- Otsu ----------------------------------------------------------------
@@ -86,7 +86,7 @@ def test_adaptativo_com_c_negativo_marca_objeto_claro():
     gray = np.full((31, 31), 20, dtype=np.uint8)
     gray[12:19, 12:19] = 200
 
-    mask = seg.threshold_adaptive(gray, 31, -5.0, seg.ADAPTIVE_MEAN)
+    mask = seg.threshold_adaptive(gray, 31, -5.0, "mean")
 
     assert mask[15, 15] == 255
     assert mask[0, 0] == 0
@@ -96,8 +96,8 @@ def test_adaptativo_em_regiao_plana_depende_do_sinal_de_c():
     """Região plana: com C positivo vira objeto, com C negativo vira fundo."""
     flat = np.full((15, 15), 100, dtype=np.uint8)
 
-    assert np.all(seg.threshold_adaptive(flat, 5, 5.0, seg.ADAPTIVE_MEAN) == 255)
-    assert np.all(seg.threshold_adaptive(flat, 5, -5.0, seg.ADAPTIVE_MEAN) == 0)
+    assert np.all(seg.threshold_adaptive(flat, 5, 5.0, "mean") == 255)
+    assert np.all(seg.threshold_adaptive(flat, 5, -5.0, "mean") == 0)
 
 
 @pytest.mark.parametrize("block_size", [1, 2, 4])
@@ -108,7 +108,7 @@ def test_adaptativo_bloco_invalido(block_size):
 
 def test_adaptativo_sem_c():
     with pytest.raises(PdiLabError):
-        seg.segment(np.zeros((5, 5), dtype=np.uint8), seg.METHOD_ADAPTIVE)
+        seg.segment(np.zeros((5, 5), dtype=np.uint8), "adaptive")
 
 
 # --- HSV -----------------------------------------------------------------
