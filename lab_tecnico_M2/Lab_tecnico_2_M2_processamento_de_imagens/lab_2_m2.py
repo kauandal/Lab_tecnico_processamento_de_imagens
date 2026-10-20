@@ -1,8 +1,9 @@
 """Reproduz todas as saídas do laboratório M2.2 em uma única execução.
 
-Primeiro refaz as máscaras do M2.1 com ``lab_1_m2.py`` e depois executa a
-operação ``analyze`` sobre cada máscara escolhida. Cada análise também pode ser
-executada isoladamente pela linha de comando::
+Primeiro refaz as máscaras do M2.1 com ``lab_1_m2.py``, depois segmenta a
+foto das moedas empilhadas e executa a operação ``analyze`` sobre cada
+máscara. Cada análise também pode ser executada isoladamente pela linha de
+comando::
 
     python -m pdi_lab --input <mascara.png> --output <prefixo> --operation analyze --sequence <config.json>
 
@@ -36,18 +37,39 @@ OUTPUT_DIR = Path("images/output")
 RESULTS_DIR = Path("results")
 
 CONNECTIVITY = 8
-MIN_AREA = 100
 
-# Cada análise: máscara do M2.1, prefixo das saídas e sequência morfológica.
-# A última é o caso de comparação com fechamento exagerado.
+# A foto das moedas empilhadas não faz parte do estudo do M2.1. A máscara dela
+# é gerada aqui, com Otsu invertido e suavização, pelo mesmo comando segment.
+STACKED_SEGMENT = [
+    "--input",
+    "images/input/moedas_real_empilhadas.jpg",
+    "--output",
+    "images/output/moedas_real_empilhadas_mask.png",
+    "--operation",
+    "segment",
+    "--method",
+    "otsu",
+    "--invert",
+    "--blur",
+    "5",
+]
+
+# Cada análise: máscara, prefixo das saídas, sequência morfológica e área
+# mínima. A área mínima é perto da metade da menor moeda de cada imagem.
 ANALYSES = [
-    {"mask": "coins_mask.png", "prefix": "coins", "sequence": "config/sequence.json"},
+    {"mask": "coins_mask.png", "prefix": "coins", "sequence": "config/coins.json", "min_area": 500},
     {
-        "mask": "moedas_brasileiras_mask.png",
-        "prefix": "moedas_brasileiras",
-        "sequence": "config/sequence.json",
+        "mask": "moedas_real_separadas_mask.png",
+        "prefix": "moedas_real_separadas",
+        "sequence": "config/moedas_real.json",
+        "min_area": 50000,
     },
-    {"mask": "coins_mask.png", "prefix": "coins_close15", "sequence": "config/sequence_close15.json"},
+    {
+        "mask": "moedas_real_empilhadas_mask.png",
+        "prefix": "moedas_real_empilhadas",
+        "sequence": "config/moedas_real.json",
+        "min_area": 50000,
+    },
 ]
 
 
@@ -56,7 +78,7 @@ def with_label(image: np.ndarray, text: str, width: int = 320) -> np.ndarray:
     if image.ndim == 2:
         image = cv.cvtColor(image, cv.COLOR_GRAY2BGR)
     height = round(image.shape[0] * width / image.shape[1])
-    image = cv.resize(image, (width, height), interpolation=cv.INTER_NEAREST)
+    image = cv.resize(image, (width, height), interpolation=cv.INTER_AREA)
     band = np.full((28, width, 3), 255, dtype=np.uint8)
     cv.putText(band, text, (6, 20), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv.LINE_AA)
     return np.vstack([band, image])
@@ -80,6 +102,10 @@ def main() -> int:
     if lab_1_m2.main() != 0:
         return 1
 
+    print("== mascara das moedas empilhadas")
+    if pdi_lab(STACKED_SEGMENT) != 0:
+        return 1
+
     rows = []
     for item in ANALYSES:
         prefix = str(RESULTS_DIR / item["prefix"])
@@ -97,7 +123,7 @@ def main() -> int:
                 "--connectivity",
                 str(CONNECTIVITY),
                 "--min-area",
-                str(MIN_AREA),
+                str(item["min_area"]),
             ]
         )
         if code != 0:
@@ -112,6 +138,7 @@ def main() -> int:
             [
                 item["prefix"],
                 Path(item["sequence"]).name,
+                item["min_area"],
                 before["count_4"],
                 before["count_8"],
                 before["count_kept"],
@@ -129,6 +156,7 @@ def main() -> int:
             [
                 "analysis",
                 "sequence",
+                "min_area",
                 "initial_count_4",
                 "initial_count_8",
                 "initial_kept",

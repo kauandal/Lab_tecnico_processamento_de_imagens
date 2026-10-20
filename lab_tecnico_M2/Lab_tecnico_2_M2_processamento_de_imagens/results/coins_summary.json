@@ -1,7 +1,7 @@
 {
   "input": "images/output/coins_mask.png",
   "connectivity": 8,
-  "min_area": 100,
+  "min_area": 500,
   "sequence": [
     {
       "operation": "open",
@@ -25,9 +25,9 @@
   "stage_counts": [
     {
       "count_raw": 50,
-      "count_kept": 28,
+      "count_kept": 25,
       "area_raw": 36843,
-      "area_kept": 36379
+      "area_kept": 35898
     },
     {
       "count_raw": 28,

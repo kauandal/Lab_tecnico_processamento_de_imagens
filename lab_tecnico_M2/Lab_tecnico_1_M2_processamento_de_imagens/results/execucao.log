@@ -4,16 +4,17 @@ Python: 3.13.14  numpy: 2.5.2  opencv: 5.0.0
 
 == python lab_1_m2.py ==
 == coins.png
-fixed: limiar=120 primeiro_plano=0.3295
-otsu: limiar=107 primeiro_plano=0.3878
-== moedas_brasileiras.jpg
-fixed: limiar=230 primeiro_plano=0.2733
-otsu: limiar=188 primeiro_plano=0.1613
+fixed: fixed T=120 primeiro_plano=0.3295
+otsu: otsu T=107 primeiro_plano=0.3878
+== moedas_real_separadas.jpg
+fixed: fixed T=85 + invert primeiro_plano=0.1792
+otsu: otsu T=109 + invert primeiro_plano=0.3129
+hsv: hsv S>=30 blur 5 primeiro_plano=0.1546
 imagens geradas em: images\output
 tabelas em: results
 exit=0
 
 == python -m pytest ==
-.....................................................................    [100%]
-69 passed in 0.29s
+......................................................................   [100%]
+70 passed in 1.29s
 exit=0

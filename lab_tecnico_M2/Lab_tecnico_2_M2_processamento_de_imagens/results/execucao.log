@@ -5,45 +5,57 @@ Python: 3.13.14  numpy: 2.5.2  opencv: 5.0.0
 == python lab_2_m2.py ==
 == reproducao das mascaras do M2.1
 == coins.png
-fixed: limiar=120 primeiro_plano=0.3295
-otsu: limiar=107 primeiro_plano=0.3878
-== moedas_brasileiras.jpg
-fixed: limiar=230 primeiro_plano=0.2733
-otsu: limiar=188 primeiro_plano=0.1613
+fixed: fixed T=120 primeiro_plano=0.3295
+otsu: otsu T=107 primeiro_plano=0.3878
+== moedas_real_separadas.jpg
+fixed: fixed T=85 + invert primeiro_plano=0.1792
+otsu: otsu T=109 + invert primeiro_plano=0.3129
+hsv: hsv S>=30 blur 5 primeiro_plano=0.1546
 imagens geradas em: images\output
 tabelas em: results
-== analyze coins_mask.png com config/sequence.json
-estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results\coins_stage_1_open.png (brutos=50 filtrados=28 area=36843)
+== mascara das moedas empilhadas
+method=otsu
+blur=5
+invert=True
+otsu_threshold=121
+width=3664
+height=2748
+foreground=4486326
+foreground_ratio=0.445573
+binary_check=ok
+saida gravada em: images\output\moedas_real_empilhadas_mask.png
+== analyze coins_mask.png com config/coins.json
+estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results\coins_stage_1_open.png (brutos=50 filtrados=25 area=36843)
 estagio 2: close ellipse 7x7, 1 iteracao(oes) -> results\coins_stage_2_close.png (brutos=28 filtrados=25 area=40069)
 conectividade=8
-min_area=100
+min_area=500
 inicial: componentes_4=190 componentes_8=87 brutos=87 filtrados=25 area=38336
 final: componentes_4=28 componentes_8=28 brutos=28 filtrados=25 area=40069
 resumo gravado em: results\coins_summary.json
 figura: images\output\coins_estagios.png
-== analyze moedas_brasileiras_mask.png com config/sequence.json
-estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results\moedas_brasileiras_stage_1_open.png (brutos=6 filtrados=5 area=53864)
-estagio 2: close ellipse 7x7, 1 iteracao(oes) -> results\moedas_brasileiras_stage_2_close.png (brutos=5 filtrados=5 area=55987)
+== analyze moedas_real_separadas_mask.png com config/moedas_real.json
+estagio 1: open ellipse 7x7, 1 iteracao(oes) -> results\moedas_real_separadas_stage_1_open.png (brutos=265 filtrados=11 area=1497625)
+estagio 2: close ellipse 41x41, 1 iteracao(oes) -> results\moedas_real_separadas_stage_2_close.png (brutos=32 filtrados=12 area=1683610)
 conectividade=8
-min_area=100
-inicial: componentes_4=77 componentes_8=23 brutos=23 filtrados=5 area=54543
-final: componentes_4=5 componentes_8=5 brutos=5 filtrados=5 area=55987
-resumo gravado em: results\moedas_brasileiras_summary.json
-figura: images\output\moedas_brasileiras_estagios.png
-== analyze coins_mask.png com config/sequence_close15.json
-estagio 1: open ellipse 3x3, 1 iteracao(oes) -> results\coins_close15_stage_1_open.png (brutos=50 filtrados=28 area=36843)
-estagio 2: close ellipse 15x15, 1 iteracao(oes) -> results\coins_close15_stage_2_close.png (brutos=17 filtrados=16 area=42065)
+min_area=50000
+inicial: componentes_4=2324 componentes_8=1812 brutos=1812 filtrados=12 area=1556885
+final: componentes_4=34 componentes_8=32 brutos=32 filtrados=12 area=1683610
+resumo gravado em: results\moedas_real_separadas_summary.json
+figura: images\output\moedas_real_separadas_estagios.png
+== analyze moedas_real_empilhadas_mask.png com config/moedas_real.json
+estagio 1: open ellipse 7x7, 1 iteracao(oes) -> results\moedas_real_empilhadas_stage_1_open.png (brutos=325 filtrados=6 area=4361924)
+estagio 2: close ellipse 41x41, 1 iteracao(oes) -> results\moedas_real_empilhadas_stage_2_close.png (brutos=27 filtrados=4 area=4746073)
 conectividade=8
-min_area=100
-inicial: componentes_4=190 componentes_8=87 brutos=87 filtrados=25 area=38336
-final: componentes_4=17 componentes_8=17 brutos=17 filtrados=16 area=42065
-resumo gravado em: results\coins_close15_summary.json
-figura: images\output\coins_close15_estagios.png
+min_area=50000
+inicial: componentes_4=1005 componentes_8=856 brutos=856 filtrados=6 area=4486326
+final: componentes_4=31 componentes_8=27 brutos=27 filtrados=4 area=4746073
+resumo gravado em: results\moedas_real_empilhadas_summary.json
+figura: images\output\moedas_real_empilhadas_estagios.png
 tabela antes/depois em: results\comparison.csv
 exit=0
 
 == python -m pytest ==
-........................................................................ [ 67%]
-...................................                                      [100%]
-107 passed in 0.47s
+........................................................................ [ 64%]
+.......................................                                  [100%]
+111 passed in 5.92s
 exit=0

@@ -1,5 +1,6 @@
-image,method,threshold,invert,foreground,pixels,foreground_ratio,selected
-coins.png,fixed,120,False,38336,116352,0.329483,True
-coins.png,otsu,107,False,45117,116352,0.387763,False
-moedas_brasileiras.jpg,fixed,230,True,54543,199563,0.273312,True
-moedas_brasileiras.jpg,otsu,188,True,32198,199563,0.161343,False
+image,config,threshold,invert,blur,foreground,pixels,foreground_ratio,selected
+coins.png,fixed,120,False,0,38336,116352,0.329483,True
+coins.png,otsu,107,False,0,45117,116352,0.387763,False
+moedas_real_separadas.jpg,fixed,85,True,0,1804491,10068672,0.179218,False
+moedas_real_separadas.jpg,otsu,109,True,0,3150354,10068672,0.312887,False
+moedas_real_separadas.jpg,hsv,,False,5,1556885,10068672,0.154627,True

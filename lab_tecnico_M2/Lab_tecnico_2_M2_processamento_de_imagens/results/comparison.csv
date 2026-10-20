@@ -1,4 +1,4 @@
-analysis,sequence,initial_count_4,initial_count_8,initial_kept,initial_area,final_count_4,final_count_8,final_kept,final_area
-coins,sequence.json,190,87,25,38336,28,28,25,40069
-moedas_brasileiras,sequence.json,77,23,5,54543,5,5,5,55987
-coins_close15,sequence_close15.json,190,87,25,38336,17,17,16,42065
+analysis,sequence,min_area,initial_count_4,initial_count_8,initial_kept,initial_area,final_count_4,final_count_8,final_kept,final_area
+coins,coins.json,500,190,87,25,38336,28,28,25,40069
+moedas_real_separadas,moedas_real.json,50000,2324,1812,12,1556885,34,32,12,1683610
+moedas_real_empilhadas,moedas_real.json,50000,1005,856,6,4486326,31,27,4,4746073

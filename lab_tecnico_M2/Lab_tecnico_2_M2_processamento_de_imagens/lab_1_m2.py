@@ -36,25 +36,52 @@ INPUT_DIR = Path("images/input")
 OUTPUT_DIR = Path("images/output")
 RESULTS_DIR = Path("results")
 
-# Em coins.png a moeda é mais clara que o fundo. Em moedas_brasileiras.jpg ela
-# é mais escura que o fundo branco, por isso a inversão.
+# Configurações de cada imagem. Todas passam pelo limiar fixo e pelo Otsu; a
+# foto colorida também passa pelo HSV. ``selected`` é a que segue para o M2.2.
+# Em moedas_real_separadas.jpg a moeda é mais escura que o fundo, por isso a
+# inversão nos métodos em cinza.
 CASES = [
-    {"image": "coins.png", "threshold": 120, "invert": False, "sweep": range(90, 155, 5)},
-    {"image": "moedas_brasileiras.jpg", "threshold": 230, "invert": True, "sweep": range(190, 255, 5)},
+    {
+        "image": "coins.png",
+        "configs": {
+            "fixed": {"method": "fixed", "threshold": 120},
+            "otsu": {"method": "otsu"},
+        },
+        "selected": "fixed",
+        "sweep": {"invert": False, "thresholds": range(90, 155, 5)},
+    },
+    {
+        "image": "moedas_real_separadas.jpg",
+        "configs": {
+            "fixed": {"method": "fixed", "threshold": 85, "invert": True},
+            "otsu": {"method": "otsu", "invert": True},
+            "hsv": {
+                "method": "hsv",
+                "hsv_lower": (0, 30, 0),
+                "hsv_upper": (179, 255, 255),
+                "blur": 5,
+            },
+        },
+        "selected": "hsv",
+        "sweep": {"invert": True, "thresholds": range(60, 125, 5)},
+    },
 ]
 
-# Configuração escolhida para seguir para o M2.2 nas duas imagens.
-SELECTED = "fixed"
 
-
-def run_config(image: np.ndarray, case: dict, method: str):
-    """Segmenta com o método pedido e confere a máscara antes de devolver."""
-    threshold = case["threshold"] if method == "fixed" else None
-    result = segmentation.segment(
-        image, method, threshold=threshold, invert=case["invert"]
-    )
-    segmentation.validate_mask(result.mask, image.shape[:2])
-    return result
+def describe(details: dict) -> str:
+    """Texto curto com o método e os parâmetros, para rótulos e tabela."""
+    method = details["method"]
+    if method == "fixed":
+        text = "fixed T=" + str(details["threshold"])
+    elif method == "otsu":
+        text = "otsu T=" + str(details["otsu_threshold"])
+    else:
+        text = "hsv S>=" + str(details["hsv_lower"][1])
+    if details["blur"]:
+        text += " blur " + str(details["blur"])
+    if details["invert"]:
+        text += " + invert"
+    return text
 
 
 def with_label(image: np.ndarray, text: str, width: int = 320) -> np.ndarray:
@@ -78,64 +105,65 @@ def main() -> int:
         for case in CASES:
             stem = Path(case["image"]).stem
             image = load_image(INPUT_DIR / case["image"])
-            suffix = " + invert" if case["invert"] else ""
             print("== " + case["image"])
 
+            panels = [with_label(image, "original")]
             masks = {}
-            labels = {}
-            for method in ("fixed", "otsu"):
-                result = run_config(image, case, method)
-                masks[method] = result.mask
-                threshold = result.details.get("threshold", result.details.get("otsu_threshold"))
-                labels[method] = method + " T=" + str(threshold) + suffix
+            for name, config in case["configs"].items():
+                result = segmentation.segment(image, **config)
+                segmentation.validate_mask(result.mask, image.shape[:2])
+                masks[name] = result.mask
 
-                save_image(OUTPUT_DIR / (stem + "_mask_" + method + ".png"), result.mask)
+                save_image(OUTPUT_DIR / (stem + "_mask_" + name + ".png"), result.mask)
+                # A sobreposição é só visualização, então vai em JPEG para não
+                # pesar; a máscara continua em PNG, sem perdas.
                 save_image(
-                    OUTPUT_DIR / (stem + "_overlay_" + method + ".png"),
+                    OUTPUT_DIR / (stem + "_overlay_" + name + ".jpg"),
                     segmentation.overlay(image, result.mask),
                 )
+                panels.append(with_label(result.mask, describe(result.details)))
 
                 stats = segmentation.mask_stats(result.mask)
+                threshold = result.details.get("threshold", result.details.get("otsu_threshold", ""))
                 foreground_rows.append(
                     [
                         case["image"],
-                        method,
+                        name,
                         threshold,
-                        case["invert"],
+                        result.details["invert"],
+                        result.details["blur"],
                         stats["foreground"],
                         stats["pixels"],
                         "{0:.6f}".format(stats["foreground_ratio"]),
-                        method == SELECTED,
+                        name == case["selected"],
                     ]
                 )
                 print(
-                    "{0}: limiar={1} primeiro_plano={2:.4f}".format(
-                        method, threshold, stats["foreground_ratio"]
+                    "{0}: {1} primeiro_plano={2:.4f}".format(
+                        name, describe(result.details), stats["foreground_ratio"]
                     )
                 )
 
             # Máscara de trabalho que segue para o M2.2.
-            save_image(OUTPUT_DIR / (stem + "_mask.png"), masks[SELECTED])
+            selected = masks[case["selected"]]
+            save_image(OUTPUT_DIR / (stem + "_mask.png"), selected)
 
-            panels = [
-                with_label(image, "original"),
-                with_label(masks["fixed"], labels["fixed"]),
-                with_label(masks["otsu"], labels["otsu"]),
-                with_label(segmentation.overlay(image, masks[SELECTED]), "sobreposicao " + SELECTED),
-            ]
+            panels.append(
+                with_label(segmentation.overlay(image, selected), "sobreposicao " + case["selected"])
+            )
             save_image(OUTPUT_DIR / (stem + "_comparacao.png"), np.hstack(panels))
 
             # Varredura do limiar fixo, para medir a sensibilidade do parâmetro.
-            for threshold in case["sweep"]:
+            for threshold in case["sweep"]["thresholds"]:
                 mask = segmentation.segment(
-                    image, "fixed", threshold=threshold, invert=case["invert"]
+                    image, "fixed", threshold=threshold, invert=case["sweep"]["invert"]
                 ).mask
                 stats = segmentation.mask_stats(mask)
                 sweep_rows.append(
                     [
                         case["image"],
                         threshold,
-                        case["invert"],
+                        case["sweep"]["invert"],
                         stats["foreground"],
                         "{0:.6f}".format(stats["foreground_ratio"]),
                     ]
@@ -147,7 +175,7 @@ def main() -> int:
     with open(RESULTS_DIR / "foreground.csv", "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(
-            ["image", "method", "threshold", "invert", "foreground", "pixels", "foreground_ratio", "selected"]
+            ["image", "config", "threshold", "invert", "blur", "foreground", "pixels", "foreground_ratio", "selected"]
         )
         writer.writerows(foreground_rows)
 

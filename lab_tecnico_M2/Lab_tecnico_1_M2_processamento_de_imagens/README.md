@@ -7,8 +7,8 @@ Estudante: Kauan Rocha Dalfovo.
 ## Objetivo
 
 Gerar e avaliar uma máscara binária de moedas, comparando um limiar fixo em
-cinza com o método de Otsu nas mesmas imagens. A máscara escolhida aqui é a
-entrada do M2.2.
+cinza com o método de Otsu nas mesmas imagens e, na foto colorida, também com
+um intervalo HSV. A máscara escolhida aqui é a entrada do M2.2.
 
 Na M2 as funções do OpenCV podem ser usadas para conversão de cor, suavização
 e limiarização. O contrato complementar da M2 ainda não foi publicado, então
@@ -79,10 +79,10 @@ resolve o caminho de `src` sozinho.
 python lab_1_m2.py
 ```
 
-Processa as duas imagens de `images/input/` com o limiar fixo e com o Otsu,
-grava as máscaras, as sobreposições e as figuras de comparação em
-`images/output/` e as tabelas em `results/`. A execução leva menos de 1
-segundo.
+Processa as duas imagens de `images/input/` com o limiar fixo e com o Otsu, e
+a foto colorida também com HSV. Grava as máscaras, as sobreposições e as
+figuras de comparação em `images/output/` e as tabelas em `results/`. A
+execução leva cerca de 2 segundos.
 
 ### Executar uma operação isolada
 
@@ -123,24 +123,24 @@ objeto e com C negativo vira fundo.
 Configurações usadas no estudo:
 
 ```bash
-python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_fixed.png --operation segment --method fixed --threshold 120 --overlay images/output/coins_overlay_fixed.png
-python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_otsu.png --operation segment --method otsu --overlay images/output/coins_overlay_otsu.png
-python -m pdi_lab --input images/input/moedas_brasileiras.jpg --output images/output/moedas_brasileiras_mask_fixed.png --operation segment --method fixed --threshold 230 --invert --overlay images/output/moedas_brasileiras_overlay_fixed.png
-python -m pdi_lab --input images/input/moedas_brasileiras.jpg --output images/output/moedas_brasileiras_mask_otsu.png --operation segment --method otsu --invert --overlay images/output/moedas_brasileiras_overlay_otsu.png
+python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_fixed.png --operation segment --method fixed --threshold 120 --overlay images/output/coins_overlay_fixed.jpg
+python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_otsu.png --operation segment --method otsu --overlay images/output/coins_overlay_otsu.jpg
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_fixed.png --operation segment --method fixed --threshold 85 --invert --overlay images/output/moedas_real_separadas_overlay_fixed.jpg
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_otsu.png --operation segment --method otsu --invert --overlay images/output/moedas_real_separadas_overlay_otsu.jpg
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_hsv.png --operation segment --method hsv --hsv-lower 0,30,0 --hsv-upper 179,255,255 --blur 5 --overlay images/output/moedas_real_separadas_overlay_hsv.jpg
 ```
 
 Máscaras escolhidas para o M2.2:
 
 ```bash
 python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask.png --operation segment --method fixed --threshold 120
-python -m pdi_lab --input images/input/moedas_brasileiras.jpg --output images/output/moedas_brasileiras_mask.png --operation segment --method fixed --threshold 230 --invert
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask.png --operation segment --method hsv --hsv-lower 0,30,0 --hsv-upper 179,255,255 --blur 5
 ```
 
-Outros métodos:
+Outro método, não usado no estudo:
 
 ```bash
 python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_adaptive.png --operation segment --method adaptive --block-size 51 --c -10
-python -m pdi_lab --input images/input/moedas_brasileiras.jpg --output images/output/moedas_brasileiras_mask_hsv.png --operation segment --method hsv --hsv-lower 0,40,0 --hsv-upper 179,255,255
 ```
 
 ## Códigos de saída
@@ -157,13 +157,14 @@ python -m pdi_lab --input images/input/moedas_brasileiras.jpg --output images/ou
 python -m pytest
 ```
 
-São 69 testes, divididos em quatro arquivos:
+São 70 testes, divididos em quatro arquivos:
 
 - `tests/test_segmentation.py`, métodos de segmentação com imagens sintéticas
   conferíveis à mão, validação da máscara e guardas;
 - `tests/test_cli.py`, interface de linha de comando, arquivos gerados e
   códigos de saída;
-- `tests/test_real_images.py`, as duas imagens reais nas duas configurações;
+- `tests/test_real_images.py`, as duas imagens reais em todas as
+  configurações do estudo;
 - `tests/test_structure.py`, estrutura de entrega e validade do `lab.json`.
 
 O arquivo `conftest.py` coloca `src` no caminho de importação, então os testes
@@ -192,7 +193,7 @@ Lab_tecnico_1_M2_processamento_de_imagens/
 │       └── segmentation.py  métodos, validação e sobreposição
 ├── tests/
 ├── images/
-│   ├── input/               coins.png e moedas_brasileiras.jpg
+│   ├── input/               coins.png e moedas_real_separadas.jpg
 │   └── output/              máscaras, sobreposições e figuras
 └── results/                 tabelas e registro de execução
 ```
@@ -201,19 +202,27 @@ Lab_tecnico_1_M2_processamento_de_imagens/
 
 - `images/input/coins.png`, 384 x 303, em cinza. Vem do scikit-image v0.26.0
   e é uma foto de moedas gregas do acervo do Brooklyn Museum, sem restrições
-  de copyright conhecidas. É a imagem com dificuldade real.
-- `images/input/moedas_brasileiras.jpg`, 559 x 357, colorida. Foi obtida na
-  internet e a fonte original e a licença ainda precisam ser verificadas. É a
-  imagem em condição favorável.
+  de copyright conhecidas. É a imagem com dificuldade real: o fundo tem tons
+  de cinza parecidos com os das moedas.
+- `images/input/moedas_real_separadas.jpg`, 3664 x 2748, colorida. Foto
+  "Moedas do Real até 2010.jpg", de Anderson Batista Evangelista Lima
+  (MisterSanderson), publicada no Wikimedia Commons em
+  https://commons.wikimedia.org/wiki/File:Moedas_do_Real_at%C3%A9_2010.jpg,
+  sob a licença Creative Commons Atribuição-CompartilhaIgual 2.5 Genérica
+  (CC BY-SA 2.5). O arquivo foi baixado sem alteração e só renomeado. É a
+  imagem em condição favorável: 12 moedas separadas sobre fundo claro.
+
+Como a foto está sob CC BY-SA 2.5, as máscaras, sobreposições e figuras
+derivadas dela ficam sob a mesma licença.
 
 ## Convenções de nomes das saídas
 
 | Arquivo | Conteúdo |
 |---|---|
-| `<imagem>_mask_fixed.png`, `<imagem>_mask_otsu.png` | máscara de cada configuração |
-| `<imagem>_overlay_fixed.png`, `<imagem>_overlay_otsu.png` | sobreposição de cada configuração |
+| `<imagem>_mask_<config>.png` | máscara de cada configuração: `fixed`, `otsu` e, na foto colorida, `hsv` |
+| `<imagem>_overlay_<config>.jpg` | sobreposição de cada configuração, em JPEG porque é só visualização |
 | `<imagem>_mask.png` | máscara escolhida, entrada do M2.2 |
-| `<imagem>_comparacao.png` | original, as duas máscaras e a sobreposição escolhida |
+| `<imagem>_comparacao.png` | original, as máscaras de cada configuração e a sobreposição escolhida |
 | `results/foreground.csv` | proporção de primeiro plano por imagem e configuração |
 | `results/threshold_sensitivity.csv` | proporção de primeiro plano variando o limiar fixo de 5 em 5 |
 

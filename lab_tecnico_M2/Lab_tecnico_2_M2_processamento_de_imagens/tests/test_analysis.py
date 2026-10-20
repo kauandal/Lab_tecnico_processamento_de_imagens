@@ -14,7 +14,7 @@ from pdi_lab.cli import main
 from pdi_lab.errors import PdiLabError
 
 PROJECT = Path(__file__).resolve().parent.parent
-SEQUENCE = PROJECT / "config" / "sequence.json"
+SEQUENCE = PROJECT / "config" / "coins.json"
 
 
 def open_step(size=3):

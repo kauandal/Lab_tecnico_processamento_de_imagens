@@ -9,23 +9,23 @@
 
 ## 2. Objetivo
 
-Gerar uma máscara binária de moedas, comparar um limiar fixo em cinza com o
-método de Otsu nas mesmas imagens e escolher a máscara que segue para o M2.2,
-apontando os acertos e os erros de cada configuração.
+Gerar uma máscara binária de moedas, comparar um limiar fixo em cinza com
+outras configurações nas mesmas imagens e escolher a máscara que segue para o
+M2.2, apontando os acertos e os erros de cada configuração.
 
 ## 3. Operações implementadas
 
 | Método | Função | Saídas geradas |
 |---|---|---|
-| `fixed` | `threshold_fixed` | `coins_mask_fixed.png`, `moedas_brasileiras_mask_fixed.png` |
-| `otsu` | `threshold_otsu` | `coins_mask_otsu.png`, `moedas_brasileiras_mask_otsu.png` |
+| `fixed` | `threshold_fixed` | `coins_mask_fixed.png`, `moedas_real_separadas_mask_fixed.png` |
+| `otsu` | `threshold_otsu` | `coins_mask_otsu.png`, `moedas_real_separadas_mask_otsu.png` |
+| `hsv` | `hsv_range` | `moedas_real_separadas_mask_hsv.png` |
 | `adaptive` | `threshold_adaptive` | disponível, não usado no estudo |
-| `hsv` | `hsv_range` | disponível, não usado no estudo |
-| sobreposição | `overlay` | `*_overlay_fixed.png`, `*_overlay_otsu.png` |
+| sobreposição | `overlay` | `*_overlay_<config>.jpg` |
 | validação | `validate_mask` | conferida em toda máscara gravada |
 
-Todas estão em `src/pdi_lab/segmentation.py`. A limiarização usa as funções
-do OpenCV, como o enunciado permite.
+Todas estão em `src/pdi_lab/segmentation.py`. A limiarização e a conversão de
+cor usam as funções do OpenCV, como o enunciado permite.
 
 ## 4. Decisões de implementação
 
@@ -37,10 +37,11 @@ máscara, 255 é moeda e 0 é fundo.
 | Imagem | Papel | Motivo |
 |---|---|---|
 | `coins.png` | dificuldade real | o fundo tem tons de cinza parecidos com os das moedas e fica mais claro no topo |
-| `moedas_brasileiras.jpg` | condição favorável | fundo branco uniforme e cinco moedas separadas |
+| `moedas_real_separadas.jpg` | condição favorável | moedas separadas sobre fundo claro e sem cor; o fundo escurece nos cantos da esquerda |
 
-As duas têm mais de um objeto: 24 moedas em `coins.png` e 5 em
-`moedas_brasileiras.jpg`. Os originais não foram alterados.
+As duas têm mais de um objeto: 24 moedas em `coins.png` e 12 em
+`moedas_real_separadas.jpg`. Os originais não foram alterados. A origem e a
+licença de cada uma estão no `README.md`.
 
 ### 4.2 Regra do limiar fixo
 
@@ -53,29 +54,41 @@ Imagens coloridas são convertidas para cinza antes do limiar.
 
 ### 4.3 Inversão
 
-Em `moedas_brasileiras.jpg` as moedas são mais escuras que o fundo. Sem
-inversão, a máscara marcaria o fundo branco como objeto. Por isso as duas
-configurações dessa imagem usam `--invert`. Em `coins.png` as moedas são mais
-claras que o fundo e não há inversão.
+Em `moedas_real_separadas.jpg` as moedas são mais escuras que o fundo. Sem
+inversão, os métodos em cinza marcariam o fundo como objeto. Por isso o limiar
+fixo e o Otsu dessa imagem usam `--invert`. Em `coins.png` as moedas são mais
+claras que o fundo e não há inversão. O HSV não precisa de inversão, porque
+seleciona direto os pixels com cor.
 
 ### 4.4 Pré-processamento
 
-Nenhuma das configurações comparadas usa pré-processamento, então a diferença
-entre as máscaras vem só do método e do limiar.
+O limiar fixo e o Otsu não usam pré-processamento, então a diferença entre as
+duas máscaras vem só do método e do limiar.
 
-Foi testado o Otsu com suavização gaussiana 5 x 5 em `coins.png`. O limiar
-calculado foi 104 e a proporção de primeiro plano subiu de 38,8% para 41,3%.
-Os pontos isolados diminuíram, mas mais fundo passou a ser marcado como
-moeda, então a suavização não foi usada.
+O HSV usa suavização gaussiana 5 x 5 (`--blur 5`). A compressão JPEG deixa
+pontos de cor soltos no fundo, e a suavização reduz esses pontos antes da
+seleção pela saturação.
 
-### 4.5 Validação da máscara
+### 4.5 Configuração HSV
+
+O fundo da foto é quase sem cor, com saturação mediana 11, e as moedas
+douradas e de cobre têm saturação acima de 100. O intervalo escolhido seleciona
+saturação de 30 a 255, com qualquer matiz e qualquer valor:
+`--hsv-lower 0,30,0 --hsv-upper 179,255,255`. Como o matiz cobre a faixa toda,
+não há faixa cruzando o 179 e o 0.
+
+A vantagem é que o escurecimento dos cantos muda o brilho do fundo, mas quase
+não muda a saturação.
+
+### 4.6 Validação da máscara
 
 A máscara é conferida duas vezes: na matriz gerada e no arquivo relido do
 disco. A conferência verifica as dimensões da entrada, um canal, tipo `uint8`
 e valores só em {0, 255}. A saída em JPEG é recusada, porque a compressão cria
-valores intermediários.
+valores intermediários. A sobreposição, que é só visualização, é gravada em
+JPEG para não pesar.
 
-### 4.6 Guardas
+### 4.7 Guardas
 
 | Situação | Comportamento |
 |---|---|
@@ -85,12 +98,12 @@ valores intermediários.
 | `--blur` ou `--block-size` par | erro explicativo |
 | `adaptive` sem `--c` | erro explicativo |
 | `hsv` sem limites, com H acima de 179 ou em imagem cinza | erro explicativo |
-| saída `.jpg`, `.jpeg` ou `.webp` | erro explicativo, nenhum arquivo gravado |
+| saída `.jpg`, `.jpeg` ou `.webp` para a máscara | erro explicativo, nenhum arquivo gravado |
 | máscara com valor fora de {0, 255} ou tamanho diferente | erro explicativo |
 
 ## 5. Testes realizados
 
-`python -m pytest` executa 69 testes, todos aprovados.
+`python -m pytest` executa 70 testes, todos aprovados.
 
 Cobertura por tipo:
 
@@ -101,18 +114,19 @@ Cobertura por tipo:
 - validação de dimensões, canal único, tipo e valores {0, 255};
 - todas as guardas listadas na seção anterior;
 - códigos de saída 0, 1 e 2 pela linha de comando;
-- as duas imagens reais nas duas configurações, com uma limitação conferida
-  em cada uma: o fundo do topo marcado como moeda em `coins.png` e o Otsu
-  perdendo o interior das moedas em `moedas_brasileiras.jpg`.
+- as duas imagens reais em todas as configurações do estudo, com uma
+  limitação conferida em cada uma: o fundo do topo marcado como moeda em
+  `coins.png` e o canto escuro marcado como moeda pelo limiar fixo em
+  `moedas_real_separadas.jpg`, que o HSV não marca.
 
 ## 6. Resultados
 
-Parâmetros das duas configurações:
+Parâmetros das configurações:
 
-| Imagem | Limiar fixo | Otsu |
-|---|---|---|
-| `coins.png` | `--threshold 120` | limiar calculado 107 |
-| `moedas_brasileiras.jpg` | `--threshold 230 --invert` | limiar calculado 188, com `--invert` |
+| Imagem | Limiar fixo | Otsu | HSV |
+|---|---|---|---|
+| `coins.png` | `--threshold 120` | limiar calculado 107 | não se aplica, imagem em cinza |
+| `moedas_real_separadas.jpg` | `--threshold 85 --invert` | limiar calculado 109, com `--invert` | `--hsv-lower 0,30,0 --hsv-upper 179,255,255 --blur 5` |
 
 Proporção de primeiro plano, de `results/foreground.csv`:
 
@@ -120,99 +134,109 @@ Proporção de primeiro plano, de `results/foreground.csv`:
 |---|---|---:|---:|---:|
 | `coins.png` | fixed | 120 | 38336 | 32,9% |
 | `coins.png` | otsu | 107 | 45117 | 38,8% |
-| `moedas_brasileiras.jpg` | fixed + invert | 230 | 54543 | 27,3% |
-| `moedas_brasileiras.jpg` | otsu + invert | 188 | 32198 | 16,1% |
+| `moedas_real_separadas.jpg` | fixed + invert | 85 | 1804491 | 17,9% |
+| `moedas_real_separadas.jpg` | otsu + invert | 109 | 3150354 | 31,3% |
+| `moedas_real_separadas.jpg` | hsv, blur 5 | S >= 30 | 1556885 | 15,5% |
 
-Todas as máscaras passaram na validação da seção 4.5.
+Todas as máscaras passaram na validação da seção 4.6.
 
 Figura 1, `images/output/coins_comparacao.png`: original, limiar fixo, Otsu e
 sobreposição do limiar fixo.
 
 ![coins](images/output/coins_comparacao.png)
 
-Figura 2, `images/output/moedas_brasileiras_comparacao.png`: original, limiar
-fixo, Otsu e sobreposição do limiar fixo.
+Figura 2, `images/output/moedas_real_separadas_comparacao.png`: original,
+limiar fixo, Otsu, HSV e sobreposição do HSV.
 
-![moedas brasileiras](images/output/moedas_brasileiras_comparacao.png)
+![moedas separadas](images/output/moedas_real_separadas_comparacao.png)
 
 Na sobreposição, verde é o que foi marcado como moeda e vermelho é o contorno
 da máscara. Contorno vermelho dentro de uma moeda indica um furo.
 
-Configuração escolhida para o M2.2: limiar fixo nas duas imagens.
+Configuração escolhida para o M2.2:
 
-- `coins.png`: as duas configurações marcam a faixa clara do topo como moeda,
-  mas o Otsu piora esse erro. Nas 25 primeiras linhas, que são só fundo, o
-  Otsu marca 61,7% dos pixels e o limiar fixo marca 34,6%. Com o Otsu a faixa
-  também chega perto da primeira moeda de cima, e as duas podem virar uma
-  região só. Em troca, o limiar fixo deixa mais furos nas moedas escuras.
-- `moedas_brasileiras.jpg`: o limiar fixo pega as cinco moedas quase
-  inteiras. O Otsu marca só os relevos e as bordas.
+- `coins.png`: limiar fixo 120. As duas configurações marcam a faixa clara do
+  topo como moeda, mas o Otsu piora esse erro. Nas 25 primeiras linhas, que
+  são só fundo, o Otsu marca 61,7% dos pixels e o limiar fixo marca 34,6%. Com
+  o Otsu a faixa também chega perto da primeira moeda de cima, e as duas podem
+  virar uma região só. Em troca, o limiar fixo deixa mais furos nas moedas
+  escuras.
+- `moedas_real_separadas.jpg`: HSV. No quadrado de 300 x 300 pixels do canto
+  inferior esquerdo, que é só fundo, o limiar fixo marca 78,3% como moeda, o
+  Otsu marca 100% e o HSV marca 4,2%. No canto superior esquerdo são 100%,
+  100% e 13,3%. O HSV separa as 12 moedas, cada uma numa região própria com
+  mais de 50000 pixels.
 
 Erros visíveis na configuração escolhida:
 
 | Imagem | Falsos positivos | Falsos negativos |
 |---|---|---|
 | `coins.png` | faixa clara do fundo no topo, encostada na borda | furos nas moedas de relevo escuro, principalmente na linha de baixo |
-| `moedas_brasileiras.jpg` | pontos soltos perto da borda das moedas, por causa da compressão JPEG | furos onde o relevo é muito claro, nas moedas de 25 e 10 centavos |
+| `moedas_real_separadas.jpg` | pontos soltos nos cantos escuros e uma mancha de sujeira no papel, embaixo à esquerda | partes prateadas, que quase não têm cor: as duas moedas de 50 centavos e o centro das moedas de 1 real ficam com furos |
 
 A proporção de primeiro plano é só uma contagem sobre a máscara. Sem máscara
 de referência ela não mede acerto, por isso este relatório não declara
 acurácia, precisão nem revocação. Os acertos e erros acima são observações
-visuais.
+visuais, e as medidas dos cantos usam regiões que, olhando a imagem, são só
+fundo.
 
 ## 7. Análise técnica
 
 ### 7.1 Em que casos o limiar fixo falhou ou funcionou
 
-Funcionou em `moedas_brasileiras.jpg`. O fundo é branco e uniforme e
-nenhuma moeda chega ao branco, então qualquer limiar entre 220 e 240 dá uma
-máscara parecida, com proporção entre 25,1% e 28,7%.
+Funcionou de forma parcial nas duas imagens, por motivos diferentes.
 
-Falhou em parte em `coins.png`, porque o brilho do fundo muda ao longo da
-imagem. Um limiar baixo o bastante para preencher as moedas escuras também
-marca o fundo claro do topo, e um limiar alto o bastante para limpar o topo
-esvazia as moedas escuras. O Otsu também é um limiar global e não resolve.
+Em `coins.png` o brilho do fundo muda ao longo da imagem. Um limiar baixo o
+bastante para preencher as moedas escuras também marca o fundo claro do topo,
+e um limiar alto o bastante para limpar o topo esvazia as moedas escuras. O
+Otsu também é um limiar global e não resolve.
 
-O Otsu falhou em `moedas_brasileiras.jpg` por outro motivo: mais da metade da
-imagem é fundo branco, com mediana do cinza igual a 255, e o limiar
-calculado, 188, acabou separando os tons de dentro das moedas.
+Em `moedas_real_separadas.jpg` as moedas e o fundo do centro se separam bem
+em cinza: a média do fundo no centro é 156 e as moedas douradas e de cobre
+ficam abaixo de 60. O problema são os cantos da esquerda, que escurecem até
+média 79 no canto inferior. Qualquer limiar que pegue as moedas inteiras
+também pega esses cantos. O Otsu, com limiar 109, marca os dois cantos
+inteiros, e no canto superior a região do fundo encosta na primeira moeda.
+
+Nesta imagem o HSV funcionou melhor que os dois, porque usa a cor, e não o
+brilho, para separar moeda de fundo.
 
 ### 7.2 Qual parâmetro foi mais sensível
 
-O limiar em `coins.png`. Em `results/threshold_sensitivity.csv`, a proporção
-cai de 47,4% com limiar 90 para 20,4% com limiar 150, cerca de 2,3 pontos
-percentuais a cada 5 níveis de cinza. Em `moedas_brasileiras.jpg`, entre 220
-e 250 a variação total é de 5,2 pontos, porque o fundo está em 255 e não muda
-de lado.
+O limiar fixo nas duas imagens. Em `results/threshold_sensitivity.csv`, em
+`coins.png` a proporção cai de 47,4% com limiar 90 para 20,4% com limiar 150,
+cerca de 2,3 pontos percentuais a cada 5 níveis de cinza. Em
+`moedas_real_separadas.jpg` ela sobe de 8,8% com limiar 60 para 38,5% com
+limiar 120, cerca de 2,5 pontos a cada 5 níveis, e quase todo esse aumento vem
+do canto escuro crescendo, e não das moedas.
 
 A inversão também decide o resultado, mas é uma escolha e não um ajuste: sem
-ela a máscara de `moedas_brasileiras.jpg` marcaria o fundo.
+ela, os métodos em cinza marcariam o fundo de `moedas_real_separadas.jpg`.
 
 ### 7.3 Quais erros podem atrapalhar a contagem no M2.2
 
 - A faixa do topo de `coins.png` é grande e vai ser contada como objeto. Um
   filtro por área mínima não a remove, porque ela é maior que as moedas.
 - Os furos sozinhos não mudam a contagem, mas uma moeda com muitos furos pode
-  se partir em pedaços e ser contada mais de uma vez. O fechamento deve
-  ajudar nesse caso.
+  se partir em pedaços e ser contada mais de uma vez. Isso pode acontecer nas
+  moedas de relevo escuro de `coins.png` e nas moedas prateadas de
+  `moedas_real_separadas.jpg`. O fechamento deve ajudar nesse caso.
 - Os pontos soltos geram componentes pequenos que aumentam a contagem bruta.
   A abertura ou um filtro por área mínima devem tratar isso.
-- Nenhuma das imagens tem moedas encostadas, então o caso de duas moedas
+- Nenhuma das duas imagens tem moedas encostadas, então o caso de duas moedas
   virarem um componente só não aparece neste par.
 
 ## 8. Limitações
 
-- A fonte original e a licença de `moedas_brasileiras.jpg` ainda não foram
-  verificadas.
 - Não há máscara de referência. As observações sobre acertos e erros são
   visuais.
-- Os limiares fixos, 120 e 230, foram escolhidos olhando as sobreposições,
-  com apoio da varredura em `results/threshold_sensitivity.csv`, e não por um
-  critério automático.
-- Os métodos `adaptive` e `hsv` estão implementados e testados, mas não fazem
-  parte da comparação principal. Em `coins.png` o adaptativo deixou as moedas
-  ocas, e em `moedas_brasileiras.jpg` o HSV por saturação perdeu as partes
-  prateadas, que quase não têm saturação.
+- Os limiares fixos, 120 e 85, e o limite de saturação, 30, foram escolhidos
+  olhando as sobreposições, com apoio da varredura em
+  `results/threshold_sensitivity.csv`, e não por um critério automático.
+- O HSV não se aplica a `coins.png`, que é em cinza, então nessa imagem a
+  comparação ficou entre limiar fixo e Otsu.
+- O método `adaptive` está implementado e testado, mas não faz parte da
+  comparação. Em `coins.png` ele deixou as moedas ocas.
 
 ## 9. Declaração de uso de IA
 
@@ -225,6 +249,9 @@ Houve uso de IA generativa. Os detalhes estão em [AI_USAGE.md](AI_USAGE.md).
   `lab_tecnico_M1/`
 - Rubrica geral: `rubrica_avaliativa.md`, em `lab_tecnico_M1/`
 - Documentação do OpenCV sobre limiarização, funções `threshold` e
-  `adaptiveThreshold`
+  `adaptiveThreshold`, e sobre conversão de cor, `cvtColor` e `inRange`
 - Documentação do scikit-image sobre o conjunto de dados `skimage.data`, de
   onde vem `coins.png`
+- Foto "Moedas do Real até 2010.jpg", de MisterSanderson, Wikimedia Commons,
+  CC BY-SA 2.5:
+  https://commons.wikimedia.org/wiki/File:Moedas_do_Real_at%C3%A9_2010.jpg

@@ -1,0 +1,57 @@
+{
+  "input": "images/output/moedas_real_separadas_mask.png",
+  "connectivity": 8,
+  "min_area": 50000,
+  "sequence": [
+    {
+      "operation": "open",
+      "shape": "ellipse",
+      "size": 7,
+      "iterations": 1,
+      "purpose": "remover pontos de cor e de sombra soltos no fundo, que nas fotos de 10 megapixels passam de 3 pixels"
+    },
+    {
+      "operation": "close",
+      "shape": "ellipse",
+      "size": 41,
+      "iterations": 1,
+      "purpose": "fechar os furos das partes prateadas e dos reflexos, que nas fotos chegam a dezenas de pixels"
+    }
+  ],
+  "stages": [
+    "results/moedas_real_separadas_stage_1_open.png",
+    "results/moedas_real_separadas_stage_2_close.png"
+  ],
+  "stage_counts": [
+    {
+      "count_raw": 265,
+      "count_kept": 11,
+      "area_raw": 1497625,
+      "area_kept": 1441064
+    },
+    {
+      "count_raw": 32,
+      "count_kept": 12,
+      "area_raw": 1683610,
+      "area_kept": 1658038
+    }
+  ],
+  "initial": {
+    "foreground": 1556885,
+    "count_4": 2324,
+    "count_8": 1812,
+    "count_raw": 1812,
+    "count_kept": 12,
+    "area_raw": 1556885,
+    "area_kept": 1519534
+  },
+  "final": {
+    "foreground": 1683610,
+    "count_4": 34,
+    "count_8": 32,
+    "count_raw": 32,
+    "count_kept": 12,
+    "area_raw": 1683610,
+    "area_kept": 1658038
+  }
+}

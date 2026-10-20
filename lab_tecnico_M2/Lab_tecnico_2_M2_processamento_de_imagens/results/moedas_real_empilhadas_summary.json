@@ -1,0 +1,57 @@
+{
+  "input": "images/output/moedas_real_empilhadas_mask.png",
+  "connectivity": 8,
+  "min_area": 50000,
+  "sequence": [
+    {
+      "operation": "open",
+      "shape": "ellipse",
+      "size": 7,
+      "iterations": 1,
+      "purpose": "remover pontos de cor e de sombra soltos no fundo, que nas fotos de 10 megapixels passam de 3 pixels"
+    },
+    {
+      "operation": "close",
+      "shape": "ellipse",
+      "size": 41,
+      "iterations": 1,
+      "purpose": "fechar os furos das partes prateadas e dos reflexos, que nas fotos chegam a dezenas de pixels"
+    }
+  ],
+  "stages": [
+    "results/moedas_real_empilhadas_stage_1_open.png",
+    "results/moedas_real_empilhadas_stage_2_close.png"
+  ],
+  "stage_counts": [
+    {
+      "count_raw": 325,
+      "count_kept": 6,
+      "area_raw": 4361924,
+      "area_kept": 4139808
+    },
+    {
+      "count_raw": 27,
+      "count_kept": 4,
+      "area_raw": 4746073,
+      "area_kept": 4707980
+    }
+  ],
+  "initial": {
+    "foreground": 4486326,
+    "count_4": 1005,
+    "count_8": 856,
+    "count_raw": 856,
+    "count_kept": 6,
+    "area_raw": 4486326,
+    "area_kept": 4282101
+  },
+  "final": {
+    "foreground": 4746073,
+    "count_4": 31,
+    "count_8": 27,
+    "count_raw": 27,
+    "count_kept": 4,
+    "area_raw": 4746073,
+    "area_kept": 4707980
+  }
+}
