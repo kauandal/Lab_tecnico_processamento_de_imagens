@@ -9,22 +9,24 @@ Claude, da Anthropic, executado pela interface Claude Code, modelo Opus.
 
 ## Finalidade
 
-Quatro finalidades, em ordem de importância:
+Cinco finalidades, em ordem de importância:
 
-1. implementação da operação `segment` do M2.1, partindo da estrutura do
-   projeto da M1, com os métodos `fixed`, `otsu`, `adaptive` e `hsv`, a
-   validação da máscara e a sobreposição;
+1. implementação da operação `segment` do M2.1, escrita do zero com a
+   ferramenta a partir da estrutura dos meus projetos da M1, com os métodos
+   `fixed`, `otsu`, `adaptive` e `hsv`, a validação da máscara e a
+   sobreposição;
 2. implementação da operação `analyze` do M2.2, com rotulação em
    conectividade 4 e 8, sequência morfológica lida de arquivo, filtro por área,
    CSV, imagem de rótulos e resumo;
 3. busca de imagens públicas de moedas com licença verificada, que resultou
-   em `coins.png` e nas duas fotos de moedas do real do Wikimedia Commons, e
-   montagem dos scripts que reproduzem os estudos;
-4. redação da documentação de entrega e da suíte de testes.
+   em `coins.png` e nas duas fotos de moedas do real do Wikimedia Commons;
+4. montagem dos scripts `lab_1_m2.py` e `lab_2_m2.py`, que reproduzem os
+   estudos, e escolha dos parâmetros a partir das medidas feitas nas imagens;
+5. redação da documentação de entrega e da suíte de testes.
 
 ## Partes afetadas
 
-Escritas ou reescritas com auxílio da ferramenta:
+Escritas com auxílio da ferramenta:
 
 - `src/pdi_lab/cli.py`, `src/pdi_lab/segmentation.py`,
   `src/pdi_lab/analysis.py`, `src/pdi_lab/image_io.py`,
@@ -34,16 +36,24 @@ Escritas ou reescritas com auxílio da ferramenta:
 - `tests/test_segmentation.py`, `tests/test_cli.py`,
   `tests/test_real_images.py`, `tests/test_analysis.py`,
   `tests/test_real_analysis.py`, `tests/test_structure.py`;
-- `README.md`, `REPORT.md`, `pyproject.toml`, `lab.json`
+- `README.md`, `REPORT.md`, `AI_USAGE.md`, `pyproject.toml`, `lab.json`.
 
-Aproveitados da M1 sem mudança: `src/pdi_lab/errors.py`,
+Copiados dos meus projetos da M1 sem mudança: `src/pdi_lab/errors.py`,
 `src/pdi_lab/__main__.py`, `conftest.py` e `.gitignore`.
 
-Trabalho meu, anterior ao uso da ferramenta:
+Não havia código da M2 antes do uso da ferramenta. As pastas dos dois
+laboratórios tinham só os enunciados. O projeto do M2.2 começou como cópia do
+projeto do M2.1.
 
-- a escolha do alvo, moedas;
-- a decisão de trocar a imagem em condição favorável por uma com licença
-  verificável e de incluir uma terceira imagem com moedas encostadas.
+Decisões tomadas por mim durante o trabalho:
+
+- o alvo, moedas, escolhido entre as opções de imagem sugeridas;
+- manter uma pasta por laboratório, como na M1, copiando o projeto do M2.1
+  para o M2.2;
+- seguir o padrão de escrita, a ordem das seções e o nível de detalhe dos
+  meus relatórios da M1;
+- trocar a imagem em condição favorável por uma com licença verificável e
+  incluir uma terceira imagem, com moedas encostadas, para o caso de contato.
 
 ## Correções apontadas pela ferramenta
 
@@ -78,15 +88,29 @@ Trabalho meu, anterior ao uso da ferramenta:
 - Conferência do hash SHA-256 de `coins.png` com o registro do scikit-image
   e da licença das duas fotos na página de cada arquivo no Wikimedia
   Commons.
+- Revisão manual, feita por mim, do código gerado e do relatório.
 
-Pendente: descrever aqui a revisão feita por mim no código e no relatório
-antes da entrega.
+## Modificações realizadas
 
-## Modificações realizadas por mim
+Não fiz alterações diretas no código gerado. As mudanças em relação à
+primeira versão foram pedidas por mim e executadas com a ferramenta:
 
-Pendente.
+- reescrita do `README.md`, do `REPORT.md` e deste arquivo para seguir o
+  padrão dos meus laboratórios da M1, com texto mais simples;
+- retirada da opção `--summary` da operação `segment`, que gravava um JSON
+  por execução, para deixar a interface mais simples;
+- troca dos scripts dos estudos por `lab_1_m2.py` e `lab_2_m2.py`, no mesmo
+  formato dos scripts da M1;
+- troca da imagem em condição favorável e inclusão da foto das moedas
+  empilhadas, descritas na seção anterior. Com a foto empilhada mostrando a
+  fusão de moedas, o caso de comparação com fechamento 15 x 15 em `coins.png`
+  foi retirado.
 
 ## Registro
 
-As justificativas técnicas de cada decisão estão nas seções 4 e 9.3 do
-`REPORT.md`, e a saída completa da execução está em `results/execucao.log`.
+Não há link compartilhável da conversa. O registro equivalente é o histórico
+de commits deste repositório: o código do M2.1 entrou no commit `9f80f8a`, o
+do M2.2 no commit `a7a41f6` e a troca de imagens no commit `bfc4ed2`, todos
+com conteúdo gerado com a ferramenta e revisado por mim. As justificativas
+técnicas de cada decisão estão nas seções 4 e 9.3 do `REPORT.md`, e a saída
+completa da execução está em `results/execucao.log`.

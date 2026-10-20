@@ -9,35 +9,41 @@ Claude, da Anthropic, executado pela interface Claude Code, modelo Opus.
 
 ## Finalidade
 
-Três finalidades, em ordem de importância:
+Quatro finalidades, em ordem de importância:
 
-1. implementação da operação `segment`, partindo da estrutura do projeto da
-   M1, com os métodos `fixed`, `otsu`, `adaptive` e `hsv`, a validação da
-   máscara e a sobreposição;
+1. implementação da operação `segment`, escrita do zero com a ferramenta a
+   partir da estrutura dos meus projetos da M1, com os métodos `fixed`,
+   `otsu`, `adaptive` e `hsv`, a validação da máscara e a sobreposição;
 2. busca de imagens públicas de moedas com licença verificada, que resultou
-   em `coins.png` e `moedas_real_separadas.jpg`, e montagem do script que
-   reproduz o estudo;
-3. redação da documentação de entrega e da suíte de testes.
+   em `coins.png` e `moedas_real_separadas.jpg`;
+3. montagem do script `lab_1_m2.py`, que reproduz o estudo, e escolha dos
+   parâmetros a partir das medidas feitas nas imagens;
+4. redação da documentação de entrega e da suíte de testes.
 
 ## Partes afetadas
 
-Escritas ou reescritas com auxílio da ferramenta:
+Escritas com auxílio da ferramenta:
 
 - `src/pdi_lab/cli.py`, `src/pdi_lab/segmentation.py`,
   `src/pdi_lab/image_io.py`, `src/pdi_lab/__init__.py`;
 - `lab_1_m2.py`;
 - `tests/test_segmentation.py`, `tests/test_cli.py`,
   `tests/test_real_images.py`, `tests/test_structure.py`;
-- `README.md`, `REPORT.md`, `pyproject.toml`, `lab.json`
+- `README.md`, `REPORT.md`, `AI_USAGE.md`, `pyproject.toml`, `lab.json`.
 
-Aproveitados da M1 sem mudança: `src/pdi_lab/errors.py`,
+Copiados dos meus projetos da M1 sem mudança: `src/pdi_lab/errors.py`,
 `src/pdi_lab/__main__.py`, `conftest.py` e `.gitignore`.
 
-Trabalho meu, anterior ao uso da ferramenta:
+Não havia código do M2.1 antes do uso da ferramenta. A pasta do laboratório
+tinha só o enunciado.
 
-- a escolha do alvo, moedas;
-- a decisão de trocar a imagem em condição favorável por uma com licença
-  verificável.
+Decisões tomadas por mim durante o trabalho:
+
+- o alvo, moedas, escolhido entre as opções de imagem sugeridas;
+- manter uma pasta por laboratório, como na M1;
+- seguir o padrão de escrita, a ordem das seções e o nível de detalhe dos
+  meus relatórios da M1;
+- trocar a imagem em condição favorável por uma com licença verificável.
 
 ## Correções apontadas pela ferramenta
 
@@ -65,15 +71,26 @@ Trabalho meu, anterior ao uso da ferramenta:
 - Conferência do hash SHA-256 de `coins.png` com o registro do scikit-image
   e da licença de `moedas_real_separadas.jpg` na página do arquivo no
   Wikimedia Commons.
+- Revisão manual, feita por mim, do código gerado e do relatório.
 
-Pendente: descrever aqui a revisão feita por mim no código e no relatório
-antes da entrega.
+## Modificações realizadas
 
-## Modificações realizadas por mim
+Não fiz alterações diretas no código gerado. As mudanças em relação à
+primeira versão foram pedidas por mim e executadas com a ferramenta:
 
-Pendente.
+- reescrita do `README.md`, do `REPORT.md` e deste arquivo para seguir o
+  padrão dos meus laboratórios da M1, com texto mais simples;
+- retirada da opção `--summary` da linha de comando, que gravava um JSON por
+  execução, para deixar a interface mais simples;
+- troca do script do estudo por `lab_1_m2.py`, no mesmo formato do script da
+  M1;
+- troca da imagem em condição favorável, descrita na seção anterior.
 
 ## Registro
 
-As justificativas técnicas de cada decisão estão na seção 4 do `REPORT.md`, e
-a saída completa da execução está em `results/execucao.log`.
+Não há link compartilhável da conversa. O registro equivalente é o histórico
+de commits deste repositório: o código do M2.1 entrou no commit `9f80f8a` e a
+troca de imagem no commit `bfc4ed2`, os dois com conteúdo gerado com a
+ferramenta e revisado por mim. As justificativas técnicas de cada decisão
+estão na seção 4 do `REPORT.md`, e a saída completa da execução está em
+`results/execucao.log`.
