@@ -147,14 +147,30 @@ def test_sobreposicao(tmp_path, gray_image):
     assert read_mask(overlay).shape == (9, 9, 3)
 
 
-def test_saida_em_diretorio_usa_nome_padrao(tmp_path, gray_image):
-    destino = tmp_path / "masks"
-    destino.mkdir()
+@pytest.mark.parametrize("name", ["saida", "pasta.png"], ids=["sem_extensao", "diretorio"])
+def test_saida_precisa_ser_o_arquivo_exato(tmp_path, gray_image, name):
+    """A máscara vai só para o caminho exato de --output, nunca para dentro de uma pasta."""
+    destino = tmp_path / name
+    if name.endswith(".png"):
+        destino.mkdir()
 
     code = main(segment_args(gray_image, destino, "--method", "otsu"))
 
-    assert code == 0
-    assert (destino / "entrada_mask_otsu.png").exists()
+    assert code == 1
+    assert not any(destino.glob("*")) if destino.is_dir() else not destino.exists()
+
+
+def test_falha_de_gravacao(tmp_path, gray_image, capsys):
+    """A pasta pai é um arquivo, então a gravação falha com mensagem clara."""
+    bloqueio = tmp_path / "arquivo.txt"
+    bloqueio.write_text("x", encoding="utf-8")
+
+    code = main(segment_args(gray_image, bloqueio / "mask.png", "--method", "otsu"))
+
+    assert code == 1
+    erro = capsys.readouterr().err
+    assert erro.startswith("erro: falha ao gravar")
+    assert "Traceback" not in erro
 
 
 # --- falhas --------------------------------------------------------------

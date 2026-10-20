@@ -43,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         required=True,
-        help="arquivo da mascara (PNG, BMP ou TIFF) ou diretorio de saida",
+        help="arquivo da mascara (PNG, BMP ou TIFF)",
     )
     parser.add_argument(
         "--operation", required=True, choices=OPERATIONS, help="operacao a executar"
@@ -107,30 +107,14 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def default_name(args: argparse.Namespace) -> str:
-    """Nome de arquivo usado quando --output aponta para um diretório."""
-    return Path(args.input).stem + "_mask_" + args.method + ".png"
-
-
-def resolve_output_path(output: str, args: argparse.Namespace) -> Path:
-    """Resolve ``--output`` aceitando tanto arquivo quanto diretório."""
-    path = Path(output)
-    looks_like_directory = (
-        path.is_dir()
-        or output.endswith("/")
-        or output.endswith("\\")
-        or path.suffix == ""
-    )
-
-    if not looks_like_directory:
-        return path
-    return path / default_name(args)
-
-
 def run_segment(args: argparse.Namespace) -> int:
     """Gera, grava e valida a máscara; opcionalmente grava a sobreposição."""
-    output = resolve_output_path(args.output, args)
+    # A máscara é gravada exatamente no caminho de --output, como pede o
+    # contrato da M2; um diretório ou caminho sem extensão é recusado.
+    output = Path(args.output)
     require_lossless(output)
+    if output.is_dir():
+        raise PdiLabError("--output deve ser um arquivo, e nao um diretorio: " + str(output))
 
     hsv_lower = hsv_upper = None
     if args.method == segmentation.METHOD_HSV:
@@ -190,6 +174,10 @@ def main(argv: list[str] | None = None) -> int:
         return run_segment(args)
     except PdiLabError as error:
         print("erro: " + str(error), file=sys.stderr)
+        return EXIT_ERROR
+    except OSError as error:
+        # Falha de leitura ou gravação de CSV e JSON fora de save_image.
+        print("erro: falha de leitura ou gravacao: " + str(error), file=sys.stderr)
         return EXIT_ERROR
 
 

@@ -13,9 +13,9 @@ depois da limpeza. A operação `segment` do M2.1 continua funcionando no
 mesmo pacote, e a nova operação é `analyze`.
 
 Na M2 as funções do OpenCV podem ser usadas para limiarização, morfologia e
-rotulação. O contrato complementar da M2 ainda não foi publicado, então o
-projeto segue o contrato técnico da M1, com as adaptações dos enunciados da
-M2.
+rotulação. O projeto segue o contrato técnico complementar da M2, em
+`lab_tecnico_M2/contrato_tecnico.md`, que adapta o contrato da M1, e a
+rubrica da M2, em `lab_tecnico_M2/rubrica_avaliativa.md`.
 
 ## Dependências
 
@@ -181,7 +181,20 @@ maior, e os pontos de ruído e os furos também são maiores em pixels.
 
 ## Exemplos de comandos
 
-Máscaras:
+Configurações comparadas no M2.1, todas reproduzidas pelo `lab_1_m2.py`:
+
+```bash
+python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_fixed.png --operation segment --method fixed --threshold 120
+python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_otsu.png --operation segment --method otsu
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_fixed.png --operation segment --method fixed --threshold 85 --invert
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_otsu.png --operation segment --method otsu --invert
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_hsv.png --operation segment --method hsv --hsv-lower 0,30,0 --hsv-upper 179,255,255 --blur 5
+```
+
+Para gravar também a sobreposição, acrescente `--overlay <arquivo.png>`. Pela
+linha de comando ela sai no tamanho original da imagem.
+
+Máscaras de trabalho, entrada do M2.2:
 
 ```bash
 python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask.png --operation segment --method fixed --threshold 120
@@ -197,15 +210,23 @@ python -m pdi_lab --input images/output/moedas_real_separadas_mask.png --output 
 python -m pdi_lab --input images/output/moedas_real_empilhadas_mask.png --output results/moedas_real_empilhadas --operation analyze --sequence config/moedas_real.json --connectivity 8 --min-area 50000
 ```
 
-As configurações de comparação do M2.1, com limiar fixo e Otsu, estão no
-`lab_1_m2.py`.
+A mesma análise com conectividade 4, para comparar com a 8. O resumo e a saída
+padrão sempre trazem as contagens nas duas conectividades; o argumento muda a
+conectividade dos CSV e da imagem de rótulos:
+
+```bash
+python -m pdi_lab --input images/output/coins_mask.png --output results/coins_c4 --operation analyze --sequence config/coins.json --connectivity 4 --min-area 500
+```
+
+A máscara do `segment` é gravada exatamente no caminho de `--output`. Um
+diretório ou um caminho sem extensão é recusado com erro.
 
 ## Códigos de saída
 
 | Código | Significado |
 |---:|---|
 | 0 | operação concluída |
-| 1 | erro previsto, com mensagem explicativa em `stderr` |
+| 1 | erro previsto, com mensagem explicativa em `stderr`: arquivo ausente ou ilegível, imagem incompatível, parâmetro inválido, máscara não binária ou falha de gravação |
 | 2 | erro de uso dos argumentos, como método, operação ou conectividade inválidos |
 
 ## Testes
@@ -214,7 +235,7 @@ As configurações de comparação do M2.1, com limiar fixo e Otsu, estão no
 python -m pytest
 ```
 
-São 111 testes, divididos em seis arquivos:
+São 115 testes, divididos em seis arquivos:
 
 - `tests/test_segmentation.py`, métodos de segmentação do M2.1 com imagens
   sintéticas, validação da máscara e guardas;
@@ -290,7 +311,7 @@ M2.1, em `images/output/`:
 | Arquivo | Conteúdo |
 |---|---|
 | `<imagem>_mask_<config>.png` | máscara de cada configuração: `fixed`, `otsu` e, na foto colorida, `hsv` |
-| `<imagem>_overlay_<config>.jpg` | sobreposição de cada configuração, em JPEG porque é só visualização |
+| `<imagem>_overlay_<config>.png` | sobreposição de cada configuração, reduzida para 1280 pixels no lado maior porque é só visualização; a máscara fica no tamanho original |
 | `<imagem>_mask.png` | máscara escolhida, entrada do M2.2 |
 | `<imagem>_comparacao.png` | original, as máscaras de cada configuração e a sobreposição escolhida |
 

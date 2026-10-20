@@ -21,7 +21,7 @@ M2.2, apontando os acertos e os erros de cada configuração.
 | `otsu` | `threshold_otsu` | `coins_mask_otsu.png`, `moedas_real_separadas_mask_otsu.png` |
 | `hsv` | `hsv_range` | `moedas_real_separadas_mask_hsv.png` |
 | `adaptive` | `threshold_adaptive` | disponível, não usado no estudo |
-| sobreposição | `overlay` | `*_overlay_<config>.jpg` |
+| sobreposição | `overlay` | `*_overlay_<config>.png` |
 | validação | `validate_mask` | conferida em toda máscara gravada |
 
 Todas estão em `src/pdi_lab/segmentation.py`. A limiarização e a conversão de
@@ -85,8 +85,9 @@ não muda a saturação.
 A máscara é conferida duas vezes: na matriz gerada e no arquivo relido do
 disco. A conferência verifica as dimensões da entrada, um canal, tipo `uint8`
 e valores só em {0, 255}. A saída em JPEG é recusada, porque a compressão cria
-valores intermediários. A sobreposição, que é só visualização, é gravada em
-JPEG para não pesar.
+valores intermediários. A sobreposição, que é só visualização, é gravada pelo
+`lab_1_m2.py` em PNG reduzido para 1280 pixels no lado maior; a máscara fica
+no tamanho original.
 
 ### 4.7 Guardas
 
@@ -100,10 +101,12 @@ JPEG para não pesar.
 | `hsv` sem limites, com H acima de 179 ou em imagem cinza | erro explicativo |
 | saída `.jpg`, `.jpeg` ou `.webp` para a máscara | erro explicativo, nenhum arquivo gravado |
 | máscara com valor fora de {0, 255} ou tamanho diferente | erro explicativo |
+| `--output` que é diretório ou não tem extensão | erro explicativo, a máscara só é gravada no caminho exato |
+| falha de gravação, como pasta pai inválida | erro explicativo, sem traceback |
 
 ## 5. Testes realizados
 
-`python -m pytest` executa 70 testes, todos aprovados.
+`python -m pytest` executa 72 testes, todos aprovados.
 
 Cobertura por tipo:
 
@@ -112,7 +115,8 @@ Cobertura por tipo:
 - Otsu em imagem com dois tons, adaptativo com C positivo e negativo e HSV
   com faixa que passa pelo 179 e volta ao 0;
 - validação de dimensões, canal único, tipo e valores {0, 255};
-- todas as guardas listadas na seção anterior;
+- todas as guardas listadas na seção anterior, inclusive a falha de
+  gravação;
 - códigos de saída 0, 1 e 2 pela linha de comando;
 - as duas imagens reais em todas as configurações do estudo, com uma
   limitação conferida em cada uma: o fundo do topo marcado como moeda em
@@ -248,6 +252,8 @@ Houve uso de IA generativa. Os detalhes estão em [AI_USAGE.md](AI_USAGE.md).
 - Contrato técnico dos laboratórios da M1: `lab_tecnico.md`, em
   `lab_tecnico_M1/`
 - Rubrica geral: `rubrica_avaliativa.md`, em `lab_tecnico_M1/`
+- Contrato técnico complementar da M2: `lab_tecnico_M2/contrato_tecnico.md`
+- Rubrica da M2: `lab_tecnico_M2/rubrica_avaliativa.md`
 - Documentação do OpenCV sobre limiarização, funções `threshold` e
   `adaptiveThreshold`, e sobre conversão de cor, `cvtColor` e `inRange`
 - Documentação do scikit-image sobre o conjunto de dados `skimage.data`, de

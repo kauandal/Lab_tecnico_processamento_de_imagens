@@ -64,12 +64,19 @@ Decisões tomadas por mim durante o trabalho:
   fonte nem licença conhecidas. Ela foi trocada por `moedas_real_separadas.jpg`,
   do Wikimedia Commons, sob CC BY-SA 2.5, e os estudos foram refeitos.
 - As sobreposições das fotos em PNG tinham 13 MB cada. Passaram a ser gravadas
-  em JPEG, já que só a máscara precisa ser sem perdas.
+  pelo script em PNG reduzido para 1280 pixels no lado maior.
 - No método `adaptive`, um valor padrão para `C` esconderia que regiões
   planas viram objeto quando `C` é positivo. Por isso `--c` passou a ser
   obrigatório.
 - O log de execução e os arquivos de resultado gravavam caminhos absolutos do
   computador. Passaram a usar caminhos relativos à raiz do projeto.
+- A conferência com o contrato técnico complementar e a rubrica da M2 apontou
+  ajustes, todos aplicados: `stages` no `lab.json`; exemplos das
+  configurações de segmentação e da conectividade 4 no `README.md`; falha de
+  gravação passou a ter mensagem clara em
+  vez de traceback; o `segment` passou a gravar só no caminho exato de
+  `--output`; as sobreposições voltaram a ser PNG; e a documentação passou a
+  citar o contrato da M2.
 - No M2.2, a contagem filtrada de `moedas_real_separadas.jpg` caiu de 12 para
   11 depois da abertura. A conferência mostrou que a moeda prateada de 50
   centavos se partiu em 131 pedaços, que o fechamento juntou de novo. Isso
@@ -80,7 +87,7 @@ Decisões tomadas por mim durante o trabalho:
 
 ## Forma de validação
 
-- Execução de `python -m pytest`, com os 111 testes aprovados.
+- Execução de `python -m pytest`, com os 115 testes aprovados.
 - Execução de `python lab_1_m2.py` e `python lab_2_m2.py` e conferência
   visual das figuras de comparação, dos estágios e das imagens de rótulos.
 - Execução de cada operação pela linha de comando, verificando os códigos de

@@ -46,5 +46,6 @@ def test_lab_json_valido():
 
     assert data["schema_version"] == 1
     assert data["lab"] == "m2.2"
+    assert data["stages"] == ["m2.1", "m2.2"], "versao consolidada deve listar os dois marcos"
     assert data["language"] == "python"
     assert data["student"]["name"]

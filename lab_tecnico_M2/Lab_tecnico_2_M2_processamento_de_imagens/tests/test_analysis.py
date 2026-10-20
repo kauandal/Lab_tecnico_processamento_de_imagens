@@ -381,3 +381,23 @@ def test_imagem_de_rotulos(tmp_path):
     assert tuple(image[0, 0]) == (0, 0, 0)
     assert tuple(image[1, 1]) == (0, 0, 0)
     assert tuple(image[2, 2]) == analysis.BOX_KEPT, "canto da caixa do componente mantido"
+
+
+def test_analyze_mascara_inexistente(tmp_path, capsys):
+    code = main(analyze_args(tmp_path / "nao_existe.png", tmp_path / "cena"))
+
+    assert code == 1
+    assert "erro:" in capsys.readouterr().err
+
+
+def test_analyze_falha_de_gravacao(tmp_path, noisy_mask, capsys):
+    """O prefixo aponta para dentro de um arquivo, então a gravação falha."""
+    bloqueio = tmp_path / "arquivo.txt"
+    bloqueio.write_text("x", encoding="utf-8")
+
+    code = main(analyze_args(noisy_mask, bloqueio / "cena"))
+
+    assert code == 1
+    erro = capsys.readouterr().err
+    assert erro.startswith("erro: falha ao gravar")
+    assert "Traceback" not in erro

@@ -11,9 +11,9 @@ cinza com o método de Otsu nas mesmas imagens e, na foto colorida, também com
 um intervalo HSV. A máscara escolhida aqui é a entrada do M2.2.
 
 Na M2 as funções do OpenCV podem ser usadas para conversão de cor, suavização
-e limiarização. O contrato complementar da M2 ainda não foi publicado, então
-o projeto segue o contrato técnico da M1, com as adaptações dos enunciados da
-M2.
+e limiarização. O projeto segue o contrato técnico complementar da M2, em
+`lab_tecnico_M2/contrato_tecnico.md`, que adapta o contrato da M1, e a
+rubrica da M2, em `lab_tecnico_M2/rubrica_avaliativa.md`.
 
 ## Dependências
 
@@ -123,11 +123,11 @@ objeto e com C negativo vira fundo.
 Configurações usadas no estudo:
 
 ```bash
-python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_fixed.png --operation segment --method fixed --threshold 120 --overlay images/output/coins_overlay_fixed.jpg
-python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_otsu.png --operation segment --method otsu --overlay images/output/coins_overlay_otsu.jpg
-python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_fixed.png --operation segment --method fixed --threshold 85 --invert --overlay images/output/moedas_real_separadas_overlay_fixed.jpg
-python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_otsu.png --operation segment --method otsu --invert --overlay images/output/moedas_real_separadas_overlay_otsu.jpg
-python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_hsv.png --operation segment --method hsv --hsv-lower 0,30,0 --hsv-upper 179,255,255 --blur 5 --overlay images/output/moedas_real_separadas_overlay_hsv.jpg
+python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_fixed.png --operation segment --method fixed --threshold 120 --overlay images/output/coins_overlay_fixed.png
+python -m pdi_lab --input images/input/coins.png --output images/output/coins_mask_otsu.png --operation segment --method otsu --overlay images/output/coins_overlay_otsu.png
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_fixed.png --operation segment --method fixed --threshold 85 --invert
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_otsu.png --operation segment --method otsu --invert
+python -m pdi_lab --input images/input/moedas_real_separadas.jpg --output images/output/moedas_real_separadas_mask_hsv.png --operation segment --method hsv --hsv-lower 0,30,0 --hsv-upper 179,255,255 --blur 5
 ```
 
 Máscaras escolhidas para o M2.2:
@@ -148,7 +148,7 @@ python -m pdi_lab --input images/input/coins.png --output images/output/coins_ma
 | Código | Significado |
 |---:|---|
 | 0 | máscara gerada, gravada e validada |
-| 1 | erro previsto, com mensagem explicativa em `stderr` |
+| 1 | erro previsto, com mensagem explicativa em `stderr`: arquivo ausente ou ilegível, imagem incompatível, parâmetro inválido, máscara não binária ou falha de gravação |
 | 2 | erro de uso dos argumentos, como método desconhecido |
 
 ## Testes
@@ -157,7 +157,7 @@ python -m pdi_lab --input images/input/coins.png --output images/output/coins_ma
 python -m pytest
 ```
 
-São 70 testes, divididos em quatro arquivos:
+São 72 testes, divididos em quatro arquivos:
 
 - `tests/test_segmentation.py`, métodos de segmentação com imagens sintéticas
   conferíveis à mão, validação da máscara e guardas;
@@ -220,11 +220,11 @@ derivadas dela ficam sob a mesma licença.
 | Arquivo | Conteúdo |
 |---|---|
 | `<imagem>_mask_<config>.png` | máscara de cada configuração: `fixed`, `otsu` e, na foto colorida, `hsv` |
-| `<imagem>_overlay_<config>.jpg` | sobreposição de cada configuração, em JPEG porque é só visualização |
+| `<imagem>_overlay_<config>.png` | sobreposição de cada configuração, reduzida para 1280 pixels no lado maior porque é só visualização; a máscara fica no tamanho original |
 | `<imagem>_mask.png` | máscara escolhida, entrada do M2.2 |
 | `<imagem>_comparacao.png` | original, as máscaras de cada configuração e a sobreposição escolhida |
 | `results/foreground.csv` | proporção de primeiro plano por imagem e configuração |
 | `results/threshold_sensitivity.csv` | proporção de primeiro plano variando o limiar fixo de 5 em 5 |
 
-Quando `--output` aponta para um diretório, o nome da máscara é
-`<imagem>_mask_<metodo>.png`.
+A máscara é gravada exatamente no caminho de `--output`. Um diretório ou um
+caminho sem extensão é recusado com erro.

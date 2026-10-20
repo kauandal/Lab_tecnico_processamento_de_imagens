@@ -46,11 +46,19 @@ def load_image(path: str | Path) -> np.ndarray:
 
 
 def save_image(path: str | Path, image: np.ndarray) -> Path:
-    """Grava a imagem no caminho indicado, criando o diretório pai se preciso."""
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    """Grava a imagem no caminho indicado, criando o diretório pai se preciso.
 
-    if not cv.imwrite(str(path), image):
+    Qualquer falha de gravação, inclusive de pasta ou de formato, vira
+    ``PdiLabError`` com mensagem clara, em vez de um traceback.
+    """
+    path = Path(path)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        written = cv.imwrite(str(path), image)
+    except (OSError, cv.error) as error:
+        raise PdiLabError(f"falha ao gravar a imagem {path}: {error}") from None
+
+    if not written:
         raise PdiLabError(f"falha ao gravar a imagem: {path}")
 
     return path

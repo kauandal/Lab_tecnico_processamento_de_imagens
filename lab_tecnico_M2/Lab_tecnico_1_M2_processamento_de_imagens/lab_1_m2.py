@@ -33,6 +33,10 @@ from pdi_lab.errors import PdiLabError  # noqa: E402
 from pdi_lab.image_io import load_image, save_image  # noqa: E402
 
 INPUT_DIR = Path("images/input")
+# Lado maior das sobreposições gravadas pelo script. Elas são só
+# visualização; nas fotos de 10 megapixels, em tamanho original, cada PNG
+# teria cerca de 13 MB.
+OVERLAY_MAX_SIDE = 1280
 OUTPUT_DIR = Path("images/output")
 RESULTS_DIR = Path("results")
 
@@ -84,6 +88,15 @@ def describe(details: dict) -> str:
     return text
 
 
+def reduced(image: np.ndarray, max_side: int = OVERLAY_MAX_SIDE) -> np.ndarray:
+    """Reduz a imagem para caber em ``max_side``; imagens menores não mudam."""
+    scale = max_side / max(image.shape[:2])
+    if scale >= 1:
+        return image
+    size = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+    return cv.resize(image, size, interpolation=cv.INTER_AREA)
+
+
 def with_label(image: np.ndarray, text: str, width: int = 320) -> np.ndarray:
     """Redimensiona a imagem e escreve um rótulo numa faixa branca em cima."""
     image = segmentation.to_bgr(image)
@@ -115,11 +128,11 @@ def main() -> int:
                 masks[name] = result.mask
 
                 save_image(OUTPUT_DIR / (stem + "_mask_" + name + ".png"), result.mask)
-                # A sobreposição é só visualização, então vai em JPEG para não
-                # pesar; a máscara continua em PNG, sem perdas.
+                # A máscara fica no tamanho original; a sobreposição, que é só
+                # visualização, vai em PNG reduzido.
                 save_image(
-                    OUTPUT_DIR / (stem + "_overlay_" + name + ".jpg"),
-                    segmentation.overlay(image, result.mask),
+                    OUTPUT_DIR / (stem + "_overlay_" + name + ".png"),
+                    reduced(segmentation.overlay(image, result.mask)),
                 )
                 panels.append(with_label(result.mask, describe(result.details)))
 
